@@ -1,3 +1,4 @@
+package item;
 public class Rice extends Ingredient implements Cookable{
 
     public Rice(String name) {

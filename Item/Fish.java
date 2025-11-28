@@ -1,3 +1,4 @@
+package item;
 public class Fish extends Ingredient implements Chopable{
 
     public Fish(String name) {

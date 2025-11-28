@@ -1,5 +1,7 @@
-import java.util.List;
+package item;
+
 import java.util.ArrayList;
+import java.util.List;
 
 public class Dish {
     private List<Preparable> components;

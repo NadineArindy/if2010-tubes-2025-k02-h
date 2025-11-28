@@ -1,3 +1,5 @@
+package item;
+
 public class Nori extends Ingredient{
 
     public Nori(String name) {

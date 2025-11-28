@@ -1,3 +1,5 @@
+package item;
+
 public enum IngredientState {
     RAW,
     CHOPPED,

@@ -1,3 +1,4 @@
+package item;
 public class Shrimp extends Ingredient implements Chopable, Cookable {
 
     public Shrimp(String name) {

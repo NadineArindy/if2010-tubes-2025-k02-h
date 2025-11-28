@@ -1,58 +1,109 @@
-package Order;
+package order;
 
-import Item.Dish;
-import Item.Ingredient;
-import Exception.InvalidDataException;
-import Exception.OrderNotFoundException;
-import Recipe.Recipe;
-
-import java.util.*;
+import exception.InvalidDataException;
+import exception.OrderNotFoundException;
+import item.Dish;
+import item.Preparable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
-
+import recipe.Recipe;
 public class OrderManager {
-    private final CopyOnWriteArrayList<Order> orders = new CopyOnWriteArrayList<>();
-    private int nextPos = 1;
 
-    public List<Order> getOrders() { 
-        return List.copyOf(orders); 
+    private final CopyOnWriteArrayList<Order> activeOrders = new CopyOnWriteArrayList<>();
+    private int nextId = 1;
+    private List<Recipe> availableRecipes;
+
+    public List<Order> getActiveOrders() {
+        return new ArrayList<>(activeOrders);
     }
 
-    public Order createOrder(Recipe r, int reward, int penalty, int timeLimitSec) {
-        Order o = new Order(nextPos++, r, reward, penalty, timeLimitSec);
-        orders.add(o);
+    public Order createOrder(Recipe recipe, int reward, int penalty, int timeLimitSec) {
+        Order o = new Order(nextId++, recipe, reward, penalty, timeLimitSec);
+        activeOrders.add(o);
         return o;
     }
 
-    public void addOrder(Order o) { orders.add(o); }
-
     public void removeOrder(Order o) throws OrderNotFoundException {
-        if (!orders.remove(o)) throw new OrderNotFoundException("Order not found: " + o);
+        if (!activeOrders.remove(o))
+            throw new OrderNotFoundException("Order not found: " + o.getId());
     }
 
-    public Order findMatching(Dish dish) throws InvalidDataException, OrderNotFoundException {
-        if (dish == null) throw new InvalidDataException("dish null");
-        List<Ingredient> comps = dish.getComponents();
-        if (comps.isEmpty()) throw new InvalidDataException("dish empty");
-        for (Order o : orders) {
+    /**
+     * Cari order pertama yang match dengan dish.
+     */
+    public Order findMatchingOrder(Dish dish)
+            throws InvalidDataException, OrderNotFoundException {
+        if (dish == null) throw new InvalidDataException("Dish cannot be null");
+
+        List<Preparable> comps = dish.getComponent();
+
+        if (comps.isEmpty()) throw new InvalidDataException("Dish contains no components");
+
+        for (Order o : activeOrders) {
             Recipe r = o.getRecipe();
-            if (r.matches(comps)) return o;
+            if (r.matches(comps))
+                return o;
         }
-        throw new OrderNotFoundException("no matching order");
+        throw new OrderNotFoundException("No matching order");
     }
 
-    public int processServedDish(Dish dish) throws InvalidDataException, OrderNotFoundException {
-        Order match = findMatching(dish);
-        removeOrder(match);
-        return match.getReward();
+    /**
+     * Saat dish di-serve:
+     * - Jika cocok → order remove + return reward
+     * - Jika tidak → throw
+     */
+    public int processServedDish(Dish dish)
+            throws InvalidDataException, OrderNotFoundException {
+
+        Order matched = findMatchingOrder(dish);
+        removeOrder(matched);
+        return matched.getReward();
     }
 
+    /**
+     * Buang order expire → return jumlah order yang expired
+     */
+    
+    // Di OrderManager.java
     public int purgeExpired() {
-        int removed = 0;
-        for (Order o : new ArrayList<>(orders)) {
-            if (o.isExpired()) { 
-                orders.remove(o); removed++; 
-            }
+    int totalPenalty = 0;
+    for (Order o : activeOrders) {
+        if (o.isExpired()) {
+            activeOrders.remove(o);
+            totalPenalty += o.getPenalty(); // Jumlahkan penaltinya
         }
-        return removed;
+    }
+    return totalPenalty;
+}
+
+    // public int purgeExpired() {
+    //     int removed = 0;
+    //     for (Order o : activeOrders) {
+    //         if (o.isExpired()) {
+    //             activeOrders.remove(o);
+    //             removed++;
+    //         }
+    //     }
+    //     return removed;
+    // }
+
+    public void setAvailableRecipes(List<Recipe> recipes) {
+        this.availableRecipes = recipes;
+    }
+
+    public void spawnRandomOrder() {
+        if (availableRecipes == null || availableRecipes.isEmpty()) return;
+        
+        Random rand = new Random();
+        Recipe randomRecipe = availableRecipes.get(rand.nextInt(availableRecipes.size()));
+        
+        // Nilai reward/time limit bisa hardcode atau ambil dari properti Recipe jika ada
+        int reward = 100; // Contoh
+        int penalty = 50; 
+        int timeLimit = 60; 
+
+        createOrder(randomRecipe, reward, penalty, timeLimit);
     }
 }

@@ -1,23 +1,24 @@
-package Item
+package item;
 
-import java.util.UUID;
+public abstract class Ingredient extends Item implements Preparable {
+    protected IngredientState state;
 
-public class Ingredient extends Item {
-    public enum IngredientState { RAW, CHOPPED, COOKING, COOKED, BURNED }
+    public Ingredient(String name) {
+        super(name);
+        this.state = IngredientState.RAW;
+    }
 
-    private IngredientState state;
+    public IngredientState getState(){
+        return state;
+    }
 
-    public Ingredient(String name, IngredientState state) {
-        super(UUID.randomUUID().toString(), name);
-        if (state == null) throw new IllegalArgumentException("state required");
+    public void setState(IngredientState state){
         this.state = state;
     }
 
-    public IngredientState getState() { 
-        return state; 
+    @Override
+    public boolean isReady(){
+        return state==IngredientState.COOKED;
     }
 
-    public void setState(IngredientState s) { 
-        state = s; 
-    }
 }
