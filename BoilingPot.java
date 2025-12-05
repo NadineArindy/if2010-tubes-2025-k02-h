@@ -3,6 +3,10 @@ public class BoilingPot extends KitchenUtensils implements CookingDevice {
     private double cookTime = 0.0;      // dalam detik atau "tick"
     private static final double COOK_DONE_TIME = 12.0;
     private static final double BURN_TIME      = 24.0;
+    
+    public BoilingPot(String name) {
+        super(name);
+    }
 
     @Override
     public boolean isPortable() {
@@ -21,9 +25,7 @@ public class BoilingPot extends KitchenUtensils implements CookingDevice {
 
     @Override
     public void addIngredient(Preparable ingredient) {
-        if (contents.size() < capacity() && canAccept(ingredient)){
-            contents.add(ingredient);
-        }
+        addToContents(ingredient);
     }
 
     @Override

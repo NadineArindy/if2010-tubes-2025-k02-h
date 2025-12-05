@@ -1,5 +1,4 @@
 abstract class Ingredient extends Item implements Preparable {
-    String name;
     IngredientState state;
 
     public Ingredient(String name) {

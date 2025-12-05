@@ -17,6 +17,8 @@ public class Rice extends Ingredient implements Cookable{
             state = IngredientState.COOKED;
         } else if (state == IngredientState.COOKED){
             state = IngredientState.BURNED;
+        } else {
+            throw new InvalidIngredientStateException("Cannot cook rice in state " + state);
         }
     }
 

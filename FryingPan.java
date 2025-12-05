@@ -4,6 +4,10 @@ public class FryingPan extends KitchenUtensils implements CookingDevice{
     private static final double COOK_DONE_TIME = 12.0;
     private static final double BURN_TIME      = 24.0;
 
+    public FryingPan(String name) {
+        super(name);
+    }
+    
     @Override
     public boolean isPortable() {
         return true;
@@ -21,9 +25,7 @@ public class FryingPan extends KitchenUtensils implements CookingDevice{
 
     @Override
     public void addIngredient(Preparable ingredient) {
-        if (contents.size() < capacity() && canAccept(ingredient)){
-            contents.add(ingredient);
-        }
+        addToContents(ingredient);
     }
 
     @Override

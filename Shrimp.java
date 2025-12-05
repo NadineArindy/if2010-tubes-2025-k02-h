@@ -17,8 +17,11 @@ public class Shrimp extends Ingredient implements Chopable, Cookable {
             state = IngredientState.COOKED;
         } else if(state == IngredientState.COOKED){
             state = IngredientState.BURNED;
+        } else {
+            throw new InvalidIngredientStateException("Shrimp must be CHOPPED before cooking. Current state: " + state);
         }
     }
+
 
     @Override
     public boolean isChopped() {
@@ -29,6 +32,8 @@ public class Shrimp extends Ingredient implements Chopable, Cookable {
     public void chop() {
         if (state == IngredientState.RAW){
             state = IngredientState.CHOPPED;
+        } else {
+            throw new InvalidIngredientStateException("Cannot chop" + getName() + " in state" + state);
         }
     }
 

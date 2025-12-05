@@ -1,4 +1,8 @@
 public class Plate extends KitchenUtensils{
+    public Plate(String name) {
+        super(name);
+    }
+
     private boolean clean = true;
 
     public boolean isClean(){
@@ -26,15 +30,16 @@ public class Plate extends KitchenUtensils{
     @Override
     public void addIngredient(Preparable ingredient) {
         if(!clean){
-            System.out.println("Plate is dirty, can't serve!"); //pake throw exception apa ga y
-            return;
+            throw new PlateDirtyException("Cannot place ingredient on dirty plate");
         }
 
-        if(contents.size() < capacity() && canAccept(ingredient)){
-            contents.add(ingredient);
-        } else {
-            System.out.println("Can't place ingredient on plate.");
-        }
+        if(contents.size() >= capacity()) {
+            throw new UtensilFullException("Plate is full (capacity = " + capacity() + ")");        }
 
+        if (!canAccept(ingredient)){
+            throw new IncompatibleIngredientException("Ingredient " + ingredient.getClass()+ " is not ready / incompatible with plate");
+        }
+        
+        contents.add(ingredient);
     }
 }
