@@ -1,14 +1,14 @@
-package order;
+package src.Order;
 
-import exception.InvalidDataException;
-import exception.OrderNotFoundException;
-import item.Dish;
-import item.Preparable;
+import src.Exception.InvalidDataException;
+import src.Exception.OrderNotFoundException;
+import src.Item.Dish;
+import src.Item.Preparable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
-import recipe.Recipe;
+import src.Recipe.Recipe;
 public class OrderManager {
 
     private final CopyOnWriteArrayList<Order> activeOrders = new CopyOnWriteArrayList<>();

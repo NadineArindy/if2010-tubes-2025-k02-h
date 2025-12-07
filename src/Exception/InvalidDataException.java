@@ -1,4 +1,4 @@
-package exception;
+package src.Exception;
 
 public class InvalidDataException extends Exception {
     public InvalidDataException(String message) { 

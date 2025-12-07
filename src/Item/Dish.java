@@ -11,6 +11,10 @@ public class Dish extends Item{
         components = new ArrayList<>();
     }
 
+    public Dish() {
+        this("Dish"); 
+    }
+
     public void addComponents(Preparable ingredient){
         if (!ingredient.isReady()){
             throw new IncompatibleIngredientException("Ingredient is not in final state, cannot be added to dish");

@@ -1,6 +1,6 @@
 package src.Item;
 
-abstract class Ingredient extends Item implements Preparable {
+public abstract class Ingredient extends Item implements Preparable {
     IngredientState state;
 
     public Ingredient(String name) {

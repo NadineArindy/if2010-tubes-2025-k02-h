@@ -1,9 +1,10 @@
-import exception.*;
-import item.*;
+package src.Game;
+import src.Exception.*;
+import src.Item.*;
 import java.util.ArrayList;
 import java.util.List;
-import order.*;
-import recipe.*;
+import src.Order.*;
+import src.Recipe.*;
 
 public class Main {
     public static void main(String[] args) {

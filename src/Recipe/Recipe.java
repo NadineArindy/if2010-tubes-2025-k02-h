@@ -1,8 +1,8 @@
-package recipe;
+package src.Recipe;
 
-import exception.InvalidDataException;
-import item.Ingredient;
-import item.Preparable;
+import src.Exception.InvalidDataException;
+import src.Item.Ingredient;
+import src.Item.Preparable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

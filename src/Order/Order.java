@@ -1,6 +1,6 @@
-package order;
+package src.Order;
 
-import recipe.Recipe;
+import src.Recipe.Recipe;
 
 public class Order {
 
