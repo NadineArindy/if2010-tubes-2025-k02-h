@@ -1,5 +1,9 @@
 package src.Item;
 
+import src.Ingredients.Cookable;
+import src.Ingredients.IngredientState;
+import src.Ingredients.Shrimp;
+
 public class FryingPan extends KitchenUtensils implements CookingDevice{
     private boolean isCooking = false;
     private double cookTime = 0.0;      // dalam detik atau "tick"
@@ -34,6 +38,9 @@ public class FryingPan extends KitchenUtensils implements CookingDevice{
     public void startCooking() {
         if(contents.isEmpty()) return;
 
+        isCooking = true;
+        cookTime = 0.0;
+
         //cek ingredients dalam content dan ubah state pake c.cook
         for (Preparable p : contents){
             if(p instanceof Cookable){ //yg bisa masuk cuman yg bisa dimasak
@@ -43,6 +50,7 @@ public class FryingPan extends KitchenUtensils implements CookingDevice{
         }
     }
 
+    @Override
     public void update(double time){
         if (!isCooking) return;
 

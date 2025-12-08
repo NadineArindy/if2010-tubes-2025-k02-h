@@ -1,4 +1,6 @@
-package src.Item;
+package src.Ingredients;
+
+import src.Exception.InvalidIngredientStateException;
 
 public class Rice extends Ingredient implements Cookable{
 

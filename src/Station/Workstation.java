@@ -1,18 +1,22 @@
 package src.Station;
 
-import src.Item.*;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Collections;
+import java.util.List;
 
+import src.Exception.WorkstationFullException;
+import src.Game.StationType;
+import src.Item.*;
+import src.chef.Chef;
+import src.chef.Position;
 public abstract class Workstation extends Station {
     private final int capacity;             
     private final int processTime;          
     private boolean isProcessing;           
     private final List<Item> itemsOnTop;    
 
-    public Workstation(String id, Position position, char symbol, int capacity, int processTime) {
-        super(id, position, symbol);
+    public Workstation(String id, Position position, char symbol, StationType type, int capacity, int processTime) {
+        super(id, position, symbol, type);
         if(capacity <= 0){
             throw new IllegalArgumentException("Capacity must be greater than 0");
         }
@@ -66,7 +70,7 @@ public abstract class Workstation extends Station {
 
     public boolean addItem(Item item) {
         if (!canAccept(item)) {
-            return false;
+            throw new WorkstationFullException("Workstation " + getId() + " is full (capacity = " + capacity + ")");
         }
         itemsOnTop.add(item);
         return true;

@@ -1,20 +1,28 @@
 package src.Station;
 
+import java.util.Stack;
+
+import src.Game.StationType;
 import src.Item.Item;
 import src.Item.Plate;
-import java.util.Stack;
+import src.chef.Chef;
+import src.chef.Position;
 
 public class PlateStorage extends Station{
     private final Stack<Plate> plates;
     private final int maxPlates;
 
-    public PlateStorage(String id, Position position, char symbol, int maxPlates) {
-        super(id, position, symbol);
+    public PlateStorage(String id, Position position, char symbol, StationType type, int maxPlates) {
+        super(id, position, symbol, type);
         if (maxPlates <= 0) {
             throw new IllegalArgumentException("maxPlates must be greater than 0");
         }
         this.maxPlates = maxPlates;
         this.plates = new Stack<>();
+
+        for (int i = 0; i < maxPlates; i++) {
+            plates.push(new Plate("Plate" + i)); 
+        }
     }
 
     public boolean isEmpty() {
@@ -52,6 +60,7 @@ public class PlateStorage extends Station{
     // Mengeluarkan dan mengembalikan piring teratas dari tumpukan
     public Plate popPlate() {
         if (isEmpty()) {
+            System.out.println("No plates available in storage");
             return null;
         }
         return plates.pop();

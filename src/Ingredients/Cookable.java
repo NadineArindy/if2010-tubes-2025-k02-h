@@ -1,4 +1,4 @@
-package src.Item;
+package src.Ingredients;
 
 public interface Cookable {
     public boolean isCooked();

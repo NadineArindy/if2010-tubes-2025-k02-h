@@ -1,20 +1,24 @@
 package src.Station;
 
-import src.Item.Plate;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import src.Game.ScoreManager;
+import src.Item.Plate;
 
 public class KitchenLoop {
     public static final int PLATE_RETURN_TIME = 10_000;
     private final PlateStorage plateStorage;
     private final List<ReturningPlate> returningPlates = new ArrayList<>();
+    private final ScoreManager scoreManager;
 
-    public KitchenLoop(PlateStorage plateStorage) {
+    public KitchenLoop(PlateStorage plateStorage, ScoreManager scoreManager) {
         if(plateStorage == null){
             throw new IllegalArgumentException("PlateStorage cannot be null");
         }
         this.plateStorage = plateStorage;
+        this.scoreManager = scoreManager;
     }
 
     public void schedulePlateReturn(Plate plate) {
@@ -35,13 +39,23 @@ public class KitchenLoop {
             returningPlate.tick(deltaTime);
             if (returningPlate.isReady()) {
                 Plate plate = returningPlate.getPlate();
+
+                // default: plate kembali dalam kondisi dirty
                 plate.setClean(false);
                 plateStorage.addPlate(plate);
+
+                // Integrasi ScoreManager di sini
+                if(plate.isClean()){
+                    scoreManager.addScore(2); // bonus kalau plate kembali bersih
+                } else {
+                    scoreManager.subtractScore(1); // penalti kalau dirty
+                }
+
                 iterator.remove();
             }
         }
     }
-
+    
     private static class ReturningPlate {
         private final Plate plate;
         private int remainingTime;

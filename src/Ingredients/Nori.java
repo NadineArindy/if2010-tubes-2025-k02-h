@@ -1,4 +1,4 @@
-package src.Item;
+package src.Ingredients;
 
 public class Nori extends Ingredient{
 
@@ -8,7 +8,6 @@ public class Nori extends Ingredient{
 
     @Override
     public boolean isReady() {
-        return true;
+        return getState() == IngredientState.RAW;
     }
-    
 }

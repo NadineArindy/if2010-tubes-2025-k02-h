@@ -1,4 +1,6 @@
-package src.Item;
+package src.Ingredients;
+
+import src.Exception.InvalidIngredientStateException;
 
 public class Fish extends Ingredient implements Chopable{
 
@@ -15,6 +17,9 @@ public class Fish extends Ingredient implements Chopable{
     public void chop() {
         if (state == IngredientState.RAW){
             state = IngredientState.CHOPPED;
+        }
+        else {
+            throw new InvalidIngredientStateException("Cannot chop" + getName() + " in state" + state);
         }
     }
 

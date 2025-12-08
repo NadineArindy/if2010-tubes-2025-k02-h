@@ -2,6 +2,7 @@ package src.Item;
 
 import java.util.HashSet;
 import java.util.Set;
+import src.Exception.IncompatibleIngredientException;
 
 public abstract class KitchenUtensils extends Item{
     Set<Preparable> contents;
@@ -35,5 +36,4 @@ public abstract class KitchenUtensils extends Item{
     public abstract int capacity();
     public abstract boolean canAccept(Preparable ingredient);
     public abstract void addIngredient(Preparable ingredient);
-
 }

@@ -1,9 +1,13 @@
 package src.Station;
 
-import src.Item.Item;
-import src.Item.Plate;
 import java.util.LinkedList;
 import java.util.Queue;
+
+import src.Game.StationType;
+import src.Item.Item;
+import src.Item.Plate;
+import src.chef.Chef;
+import src.chef.Position;
 
 public class WashingStation extends Station {
     private final Queue<Plate> dirtyPlates;
@@ -13,8 +17,8 @@ public class WashingStation extends Station {
     private int remainingWashTime;
     public static final int WASH_TIME = 3000; // Waktu mencuci dalam satuan tick
 
-    public WashingStation(String id, Position position, char symbol) {
-        super(id, position, symbol);
+    public WashingStation(String id, Position position, char symbol, StationType type) {
+        super(id, position, symbol, type);
         this.dirtyPlates = new LinkedList<>();
         this.cleanPlates = new LinkedList<>();
         this.currentPlate = null;
@@ -95,7 +99,8 @@ public class WashingStation extends Station {
         }
 
         Item inHand = chef.getInventory();
-        if(inHand instanceof Plate plate && !plate.isClean()){
+        if(inHand instanceof Plate && !((Plate) inHand).isClean()){
+            Plate plate = (Plate) inHand;
             addDirtyPlate(plate);
             chef.setInventory(null);
             return;

@@ -1,106 +1,71 @@
 package src.Game;
-import src.Exception.*;
-import src.Item.*;
-import java.util.ArrayList;
-import java.util.List;
-import src.Order.*;
-import src.Recipe.*;
+
+import javax.swing.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import src.chef.Chef;
+import src.chef.Position;
+import src.chef.Direction;
+
 
 public class Main {
     public static void main(String[] args) {
-        try {
-            System.out.println("=== 1. SETUP RESEP & ORDER MANAGER ===");
-            OrderManager orderManager = new OrderManager();
+        // Buat map dari factory
+        GameMap map = MapFactory.createSampleMap();
 
-            // --- Membuat Definisi Resep: "Sushi Set" ---
-            // Kita butuh: Nasi (Cooked), Ikan (Chopped), Nori (Raw)
-            
-            // 1. Requirement Nasi Matang
-            Rice reqRice = new Rice("Nasi");
-            reqRice.setState(IngredientState.COOKED);
+        // Spawn dua chef
+        Position spawn = map.getSpawnPoint();
+        Chef chefA = new Chef("C1", "Riko", spawn);
+        Chef chefB = new Chef("C2", "Partner", new Position(spawn.getX() + 1, spawn.getY()));
 
-            // 2. Requirement Ikan Potong
-            Fish reqFish = new Fish("Ikan");
-            reqFish.chop(); // Set state jadi CHOPPED
+        // Controller untuk switch chef
+        GameController controller = new GameController(chefA, chefB);
 
-            // 3. Requirement Nori (Nori selalu ready/raw di code kamu)
-            Nori reqNori = new Nori("Nori");
+        // Setup JFrame
+        JFrame frame = new JFrame("Nimonscooked Demo");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-            List<Ingredient> recipeIngredients = new ArrayList<>();
-            recipeIngredients.add(reqRice);
-            recipeIngredients.add(reqFish);
-            recipeIngredients.add(reqNori);
+        // Panel map, awalnya pakai chef aktif
+        MapPanel panel = new MapPanel(map, controller.getActiveChef());
+        frame.add(panel);
 
-            Recipe sushiRecipe = new Recipe("Sushi Set", recipeIngredients);
-            System.out.println("Resep terdaftar: " + sushiRecipe.getName());
+        frame.setSize(800, 600);
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
 
-
-            // --- Membuat Order ---
-            // Reward 100, Penalty 50, Waktu 60 detik
-            Order currentOrder = orderManager.createOrder(sushiRecipe, 100, 50, 60);
-            System.out.println("New Order Created: " + currentOrder);
-
-
-            System.out.println("\n=== 2. SIMULASI CHEF MEMASAK (PREPARING) ===");
-            
-            // Chef mengambil bahan mentah
-            Rice chefRice = new Rice("Nasi"); // Masih RAW
-            Fish chefFish = new Fish("Ikan"); // Masih RAW
-            Nori chefNori = new Nori("Nori"); // Ready
-
-            System.out.println("Status Awal Nasi: " + chefRice.getState());
-            
-            // --- Proses Memasak Nasi ---
-            // Ingat logic Rice.java: Raw -> Cooking -> Cooked
-            System.out.println(">> Memasak Nasi...");
-            chefRice.cook(); // Jadi COOKING
-            chefRice.cook(); // Jadi COOKED
-            System.out.println("Status Nasi Sekarang: " + chefRice.getState());
-
-            // --- Proses Memotong Ikan ---
-            System.out.println("Status Awal Ikan: " + chefFish.getState());
-            System.out.println(">> Memotong Ikan...");
-            chefFish.chop(); // Jadi CHOPPED
-            System.out.println("Status Ikan Sekarang: " + chefFish.getState());
-
-
-            System.out.println("\n=== 3. PLATING (MENYUSUN DI PIRING) ===");
-            Dish myDish = new Dish();
-
-            // Masukkan bahan ke Dish
-            // Note: Dish.java kamu hanya menerima bahan jika ingredient.isReady() == true
-            
-            myDish.addComponents(chefRice); // Masuk (karena cooked)
-            myDish.addComponents(chefFish); // Masuk (karena chopped)
-            myDish.addComponents(chefNori); // Masuk (karena nori always true)
-
-            System.out.println("Komponen di piring: ");
-            for (Preparable p : myDish.getComponent()) {
-                if (p instanceof Ingredient) {
-                    System.out.println("- " + ((Ingredient)p).getName() + " [" + p.getState() + "]");
+        // Keyboard input
+        frame.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                Chef active = controller.getActiveChef();
+                Chef[] others = new Chef[]{controller.getInactiveChef()}; 
+                
+                switch (e.getKeyCode()) {
+                    case KeyEvent.VK_TAB: // switch chef
+                        controller.switchChef();
+                        panel.setChef(controller.getActiveChef()); // update panel
+                        break;
+                    case KeyEvent.VK_W:
+                        active.move(Direction.UP, map, others);
+                        break;
+                    case KeyEvent.VK_S:
+                        active.move(Direction.DOWN, map, others);
+                        break;
+                    case KeyEvent.VK_A:
+                        active.move(Direction.LEFT, map, others);
+                        break;
+                    case KeyEvent.VK_D:
+                        active.move(Direction.RIGHT, map, others);
+                        break;
+                    case KeyEvent.VK_E: // tombol aksi interaksi
+                        active.interact(map); // implementasi interaksi di Chef
+                        break;
                 }
+                panel.repaint();
             }
+        });
 
-
-            System.out.println("\n=== 4. SERVING (MENYAJIKAN) ===");
-            
-            try {
-                // Cek apakah dish ini sesuai dengan order yang ada
-                int reward = orderManager.processServedDish(myDish);
-                System.out.println("SUKSES! Dish disajikan.");
-                System.out.println("Skor didapatkan: " + reward);
-            } catch (OrderNotFoundException e) {
-                System.out.println("GAGAL: Tidak ada order yang cocok!");
-            } catch (InvalidDataException e) {
-                System.out.println("ERROR: Data dish tidak valid.");
-            }
-
-            // Cek sisa order
-            System.out.println("Sisa Order aktif: " + orderManager.getActiveOrders().size());
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        // Timer untuk repaint otomatis
+        new Timer(100, e -> panel.repaint()).start();
     }
 }

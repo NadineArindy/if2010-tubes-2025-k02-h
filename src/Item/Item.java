@@ -1,7 +1,7 @@
 package src.Item;
 
 public abstract class Item {
-    String name;
+    private String name;
 
     public Item(String name){
         this.name = name;

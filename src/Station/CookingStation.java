@@ -1,10 +1,13 @@
 package src.Station;
 
+import src.Game.StationType;
+import src.Ingredients.Cookable;
 import src.Item.Item;
 import src.Item.KitchenUtensils;
 import src.Item.Plate;
 import src.Item.Preparable;
-import src.Item.Cookable;
+import src.chef.Chef;
+import src.chef.Position;
 
 public class CookingStation extends Workstation {
     private KitchenUtensils cookingUtensil;
@@ -15,8 +18,8 @@ public class CookingStation extends Workstation {
     public static final int COOKING_TIME = 12_000;
     public static final int BURNING_TIME = 24_000;
 
-    public CookingStation(String id, Position position, char symbol, int capacity, int processTime) {
-        super(id, position, symbol, capacity, processTime);
+    public CookingStation(String id, Position position, char symbol, StationType type, int capacity, int processTime) {
+        super(id, position, symbol, type, capacity, processTime);
         this.cookingUtensil = null;
         this.isCooking = false;
         this.remainingTime = 0;
@@ -47,7 +50,8 @@ public class CookingStation extends Workstation {
 
     private void advanceCookables(KitchenUtensils utensil){
         for(Preparable p : utensil.getContents()){
-            if(p instanceof Cookable cookable){
+            if (p instanceof Cookable) {
+                Cookable cookable = (Cookable) p;
                 try {
                     cookable.cook();
                 } catch (RuntimeException e) {
@@ -100,7 +104,9 @@ public class CookingStation extends Workstation {
         Item onTop = peekTopItem(); 
 
         //CASE 1: Chef memiliki piring bersih di tangan dan ada item di workstation tapi tidak berada di dalam utensil
-        if(inHand instanceof Plate plateInHand && plateInHand.isClean() && onTop instanceof Preparable preparable && !(onTop instanceof KitchenUtensils)){
+        if (inHand instanceof Plate && ((Plate) inHand).isClean() && onTop instanceof Preparable && !(onTop instanceof KitchenUtensils)) {
+            Plate plateInHand = (Plate) inHand;
+            Preparable preparable = (Preparable) onTop;
             try{
                 plateInHand.addIngredient(preparable);
                 removeTopItem();
@@ -111,7 +117,9 @@ public class CookingStation extends Workstation {
         }
 
         //CASE 2: Chef memiliki piring bersih di tangan dan ingredient di dalam utensil di station
-        if(inHand instanceof Plate plateInHand2 && plateInHand2.isClean() && onTop instanceof KitchenUtensils utensilOnTable){
+        if (inHand instanceof Plate && ((Plate) inHand).isClean() && onTop instanceof KitchenUtensils) {
+            Plate plateInHand2 = (Plate) inHand;
+            KitchenUtensils utensilOnTable = (KitchenUtensils) onTop;
             try{
                 for(Preparable p : utensilOnTable.getContents()){
                     plateInHand2.addIngredient(p);
@@ -122,8 +130,12 @@ public class CookingStation extends Workstation {
         }
 
         //CASE 3: Ingredient di dalam utensil di tangan chef dan ada piring bersih di station
-        if(inHand instanceof KitchenUtensils utensilInHand && onTop instanceof Plate plateOnTable && plateOnTable.isClean()){
-           try{
+        if (inHand instanceof KitchenUtensils
+                && onTop instanceof Plate
+                && ((Plate) onTop).isClean()) {
+
+            KitchenUtensils utensilInHand = (KitchenUtensils) inHand;
+            Plate plateOnTable = (Plate) onTop;           try{
                 for(Preparable p : utensilInHand.getContents()){
                     plateOnTable.addIngredient(p);
                 }
@@ -132,7 +144,8 @@ public class CookingStation extends Workstation {
             return;
         }
 
-        if (inHand instanceof KitchenUtensils utensilInHand2 && !isFull()) {
+        if (inHand instanceof KitchenUtensils && !isFull()) {
+            KitchenUtensils utensilInHand2 = (KitchenUtensils) inHand;
             if (addItem(utensilInHand2)) {
                 chef.setInventory(null);
                 if (hasCookableContents(utensilInHand2)) {
@@ -142,7 +155,8 @@ public class CookingStation extends Workstation {
             return;
         }
 
-        if (inHand == null && onTop instanceof KitchenUtensils utensilOnTable2) {
+        if (inHand == null && onTop instanceof KitchenUtensils) {
+            KitchenUtensils utensilOnTable2 = (KitchenUtensils) onTop;
             Item taken = removeTopItem();
             chef.setInventory(taken);
 

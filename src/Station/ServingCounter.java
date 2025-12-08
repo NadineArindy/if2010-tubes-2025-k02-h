@@ -1,22 +1,29 @@
 package src.Station;
 
+import java.util.Set;
+
 import src.Exception.InvalidDataException;
 import src.Exception.OrderNotFoundException;
+import src.Game.ScoreManager;
+import src.Game.StationType;
 import src.Item.Dish;
 import src.Item.Item;
 import src.Item.Plate;
 import src.Item.Preparable;
 import src.Order.OrderManager;
-import java.util.Set;
+import src.chef.Chef;
+import src.chef.Position;
 
 public class ServingCounter extends Station {
     private OrderManager orderManager;
     private KitchenLoop kitchenLoop;
+    private ScoreManager scoreManager;
 
-    public ServingCounter(String id, Position position, char symbol, OrderManager orderManager, KitchenLoop kitchenLoop) {
-        super(id, position, symbol);
+    public ServingCounter(String id, Position position, char symbol, StationType type, OrderManager orderManager, KitchenLoop kitchenLoop, ScoreManager scoreManager) {
+        super(id, position, symbol, type);
         this.orderManager = orderManager;
         this.kitchenLoop = kitchenLoop;
+        this.scoreManager = scoreManager;
     }
 
     public OrderManager getOrderManager() {
@@ -37,15 +44,17 @@ public class ServingCounter extends Station {
 
     @Override
     public void interact(Chef chef) {   
-        if(chef == null || kitchenLoop == null || orderManager == null){
+        if(chef == null || kitchenLoop == null || orderManager == null || scoreManager == null){
             return;
         }
 
         Item inHand = chef.getInventory();
 
-        if(!(inHand instanceof Plate plate)){
+        if(!(inHand instanceof Plate)){
             return;
         }
+
+        Plate plate = (Plate) inHand;
 
         if(!plate.isClean()){
             return;
@@ -64,11 +73,12 @@ public class ServingCounter extends Station {
 
         try {
             int reward = orderManager.processServedDish(dish);
-            // TODO: sambung ke ScoreManager?
-        } catch (OrderNotFoundException e) {
+            scoreManager.addScore(reward);
+            System.out.println("Score updated: " + scoreManager.getScore());
+        } catch (OrderNotFoundException | InvalidDataException e) {
             // pinalti jika dish tidak sesuai dengan order yang ada
-        } catch (InvalidDataException e) {
-            
+            scoreManager.subtractScore(20); // Contoh penalti 20 poin
+            System.out.println("Incorrect dish. Penalty applied. Score: " + scoreManager.getScore());
         }
 
         cleanupPlate(plate);
@@ -84,7 +94,7 @@ public class ServingCounter extends Station {
 
         Dish dish = new Dish();
         for(Preparable p : contents){
-            dish.addComponents(p);
+            dish.addComponent(p);
         }
 
         return dish;

@@ -1,4 +1,4 @@
-package src.Item;
+package src.Exception;
 
 public class ItemException extends RuntimeException{ // kelas induk exception untuk item
 

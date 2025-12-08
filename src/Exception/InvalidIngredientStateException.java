@@ -1,4 +1,4 @@
-package src.Item;
+package src.Exception;
 
 public class InvalidIngredientStateException extends ItemException { // kelas exception untuk  state ingredient yang salah
 

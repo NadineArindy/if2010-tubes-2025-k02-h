@@ -1,5 +1,7 @@
 package src.Item;
 
+import src.Exception.IncompatibleIngredientException;
+
 public class Plate extends KitchenUtensils{
     public Plate(String name) {
         super(name);
@@ -21,7 +23,7 @@ public class Plate extends KitchenUtensils{
     }
     @Override
     public int capacity() {
-        return 5;
+        return 4;
     }
 
     @Override

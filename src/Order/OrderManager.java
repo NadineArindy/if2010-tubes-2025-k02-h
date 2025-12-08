@@ -1,14 +1,13 @@
 package src.Order;
 
-import src.Exception.InvalidDataException;
-import src.Exception.OrderNotFoundException;
-import src.Item.Dish;
-import src.Item.Preparable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
-import src.Recipe.Recipe;
+import src.Exception.InvalidDataException;
+import src.Exception.OrderNotFoundException;
+import src.Item.Dish;
+import src.Item.Preparable;
 public class OrderManager {
 
     private final CopyOnWriteArrayList<Order> activeOrders = new CopyOnWriteArrayList<>();
@@ -37,7 +36,7 @@ public class OrderManager {
             throws InvalidDataException, OrderNotFoundException {
         if (dish == null) throw new InvalidDataException("Dish cannot be null");
 
-        List<Preparable> comps = dish.getComponent();
+        List<Preparable> comps = dish.getComponents();
 
         if (comps.isEmpty()) throw new InvalidDataException("Dish contains no components");
 

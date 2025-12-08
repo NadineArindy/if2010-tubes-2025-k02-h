@@ -1,5 +1,9 @@
 package src.Item;
 
+import src.Ingredients.Cookable;
+import src.Ingredients.IngredientState;
+import src.Ingredients.Rice;
+
 public class BoilingPot extends KitchenUtensils implements CookingDevice {
     private boolean isCooking = false;
     private double cookTime = 0.0;      // dalam detik atau "tick"
@@ -47,6 +51,7 @@ public class BoilingPot extends KitchenUtensils implements CookingDevice {
         }
     }
 
+    @Override
     public void update(double time){
         if (!isCooking) return;
 
