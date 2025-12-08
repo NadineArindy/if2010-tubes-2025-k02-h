@@ -1,6 +1,6 @@
 package src.Item;
 
-abstract class Item {
+public abstract class Item {
     String name;
 
     public Item(String name){

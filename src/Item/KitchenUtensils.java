@@ -3,7 +3,7 @@ package src.Item;
 import java.util.HashSet;
 import java.util.Set;
 
-abstract class KitchenUtensils extends Item{
+public abstract class KitchenUtensils extends Item{
     Set<Preparable> contents;
 
     public KitchenUtensils(String name) {
