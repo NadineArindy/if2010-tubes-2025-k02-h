@@ -10,10 +10,17 @@ import src.chef.Position;
 class MapPanel extends JPanel {
     private final GameMap map;
     private Chef chef;
+    private Chef[] chefs;
+    private Chef activeChef;
 
-    public MapPanel(GameMap map, Chef chef) {
+    public MapPanel(GameMap map, Chef[] chefs, Chef activeChef) {
         this.map = map;
-        this.chef = chef;
+        this.chefs = chefs;
+        this.activeChef = activeChef;
+    }
+
+    public void setActiveChef(Chef chef) {
+        this.activeChef = chef;
     }
 
     public void setChef(Chef chef) {
@@ -59,7 +66,7 @@ class MapPanel extends JPanel {
                                cellSize / 2, cellSize / 2);
 
                     g.setColor(Color.BLACK);
-                    String label = String.valueOf(s.getType().getSymbol());
+                    String label = String.valueOf(s.getSymbol());
 
                     // pakai FontMetrics untuk center text
                     FontMetrics fm = g.getFontMetrics();
@@ -73,14 +80,16 @@ class MapPanel extends JPanel {
         }
 
         // gambar Chef
-        Position cPos = chef.getPosition();
-        if (cPos != null) {
-            int cx = xOffset + cPos.getX() * cellSize;
-            int cy = yOffset + cPos.getY() * cellSize;
+        for (Chef c : chefs) {
+            Position pos = c.getPosition();
+            if (pos != null) {
+                int cx = xOffset + pos.getX() * cellSize;
+                int cy = yOffset + pos.getY() * cellSize;
 
-            g.setColor(Color.BLUE);
-            g.fillOval(cx + cellSize / 4, cy + cellSize / 4,
-                       cellSize / 2, cellSize / 2);
+                g.setColor(c == activeChef ? Color.BLUE : Color.GREEN);
+                g.fillOval(cx + cellSize / 4, cy + cellSize / 4,
+                        cellSize / 2, cellSize / 2);
+            }
         }
     }
 }

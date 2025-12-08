@@ -2,7 +2,6 @@ package src.Game;
 
 import java.awt.event.ActionEvent;
 import javax.swing.*;
-
 import src.chef.Chef;
 import src.chef.Direction;
 
@@ -19,7 +18,7 @@ class GameFrame extends JFrame {
         setSize(800, 600);
         setLocationRelativeTo(null);
 
-        MapPanel panel = new MapPanel(map, chef);
+        MapPanel panel = new MapPanel(map, null, chef);
         setContentPane(panel);
 
         // pakai KeyBinding biar enak

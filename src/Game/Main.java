@@ -3,10 +3,10 @@ package src.Game;
 import javax.swing.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+
 import src.chef.Chef;
 import src.chef.Position;
 import src.chef.Direction;
-
 
 public class Main {
     public static void main(String[] args) {
@@ -25,8 +25,9 @@ public class Main {
         JFrame frame = new JFrame("Nimonscooked Demo");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        // Panel map, awalnya pakai chef aktif
-        MapPanel panel = new MapPanel(map, controller.getActiveChef());
+        // Panel map, kirim semua chef + chef aktif
+        Chef[] allChefs = new Chef[]{chefA, chefB};
+        MapPanel panel = new MapPanel(map, allChefs, controller.getActiveChef());
         frame.add(panel);
 
         frame.setSize(800, 600);
@@ -38,12 +39,12 @@ public class Main {
             @Override
             public void keyPressed(KeyEvent e) {
                 Chef active = controller.getActiveChef();
-                Chef[] others = new Chef[]{controller.getInactiveChef()}; 
-                
+                Chef[] others = new Chef[]{controller.getInactiveChef()};
+
                 switch (e.getKeyCode()) {
                     case KeyEvent.VK_TAB: // switch chef
                         controller.switchChef();
-                        panel.setChef(controller.getActiveChef()); // update panel
+                        panel.setActiveChef(controller.getActiveChef()); // update panel
                         break;
                     case KeyEvent.VK_W:
                         active.move(Direction.UP, map, others);
@@ -58,7 +59,7 @@ public class Main {
                         active.move(Direction.RIGHT, map, others);
                         break;
                     case KeyEvent.VK_E: // tombol aksi interaksi
-                        active.interact(map); // implementasi interaksi di Chef
+                        active.interact(map);
                         break;
                 }
                 panel.repaint();
