@@ -4,6 +4,10 @@ import src.Exception.InvalidIngredientStateException;
 
 public class Shrimp extends Ingredient implements Chopable, Cookable {
 
+    public Shrimp() {
+        super("Shrimp");
+    }
+    
     public Shrimp(String name) {
         super(name);
     }
