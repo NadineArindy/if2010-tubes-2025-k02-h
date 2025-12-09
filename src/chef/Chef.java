@@ -41,13 +41,19 @@ public class Chef {
         int newX = position.getX() + dir.dx;
         int newY = position.getY() + dir.dy;
 
-        direction = dir;
+        this.direction = dir;
 
         if (!map.isWalkable(newX, newY)) return;
 
-        for (Chef other : others) {
-            if (other != this && other.getPosition().equals(new Position(newX, newY))) {
-                return; // tidak bisa tabrakan dengan chef lain
+        if(others != null){
+            for (Chef other : others) {
+                if(other == null || other == this) continue;
+                Position otherPos = other.getPosition();
+                if(other != this) {
+                    if (otherPos.getX() == newX && otherPos.getY() == newY) {
+                        return; 
+                    }
+                }
             }
         }
 
@@ -56,6 +62,7 @@ public class Chef {
     }
 
     public void interact(GameMap map) {
+        if(map == null) return;
         if (isBusy()) return;
 
         Position front = getFrontPosition();
@@ -64,11 +71,9 @@ public class Chef {
 
         if (tile.hasStation()) {
             Station station = tile.getStation();
-            currentAction = ActionState.BUSY;
-            new Thread(() -> {
+            if(station != null){
                 station.interact(this);
-                currentAction = ActionState.IDLE;
-            }).start();
+}
         } else {
             // pick up / put down logic
             handleFloorInteraction(tile);
@@ -87,7 +92,7 @@ public class Chef {
 
     @Override
     public String toString() {
-        return "Chef{" + id + ", pos=" + position + ", dir=" + direction + ", item=" + inventory + "}";
+        return "Chef{" + id + ", pos=" + position + ", dir=" + direction + ", item=" + (inventory != null ? inventory.getName() : "null") + ", state=" + currentAction + "}";
     }
 
     public enum ActionState {

@@ -4,6 +4,10 @@ import src.Exception.InvalidIngredientStateException;
 
 public class Cucumber extends Ingredient implements Chopable {
 
+    public Cucumber(){
+        super("Cucumber");
+    }
+    
     public Cucumber(String name) {
         super(name);
     }

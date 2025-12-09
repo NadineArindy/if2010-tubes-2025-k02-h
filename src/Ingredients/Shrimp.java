@@ -43,7 +43,6 @@ public class Shrimp extends Ingredient implements Chopable, Cookable {
 
     @Override
     public boolean isReady() {
-        return isCooked() && isChopped();
+        return isCooked();
     }
-    
 }

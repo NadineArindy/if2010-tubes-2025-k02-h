@@ -44,13 +44,6 @@ public class KitchenLoop {
                 plate.setClean(false);
                 plateStorage.addPlate(plate);
 
-                // Integrasi ScoreManager di sini
-                if(plate.isClean()){
-                    scoreManager.addScore(2); // bonus kalau plate kembali bersih
-                } else {
-                    scoreManager.subtractScore(1); // penalti kalau dirty
-                }
-
                 iterator.remove();
             }
         }

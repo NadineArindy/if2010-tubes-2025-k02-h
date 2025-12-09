@@ -4,6 +4,10 @@ import src.Exception.InvalidIngredientStateException;
 
 public class Rice extends Ingredient implements Cookable{
 
+    public Rice() {
+        super("Rice");
+    }
+    
     public Rice(String name) {
         super(name);
     }
