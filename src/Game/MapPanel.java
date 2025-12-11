@@ -195,7 +195,7 @@ class MapPanel extends JPanel {
                         int barHeight = 6;
 
                         int barX = px + (cellSize - barWidth) / 2;
-                        int barY = py - barHeight - 4; // posisi sedikit di atas tile
+                        int barY = py + 2; // posisi sedikit di atas tile
 
                         // background bar
                         g2.setColor(new Color(230, 230, 230));
