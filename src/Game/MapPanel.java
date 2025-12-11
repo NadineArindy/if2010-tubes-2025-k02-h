@@ -48,13 +48,16 @@ class MapPanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        int ordersPanelWidth = 260;
 
         int cols = map.getWidth();
         int rows = map.getHeight();
 
+        int availableWidth = getWidth() - ordersPanelWidth;
+
         // Hitung ukuran 1 tile supaya seluruh map muat di panel
-        int cellSize = Math.min(getWidth() / cols, getHeight() / rows);
-        int xOffset = (getWidth() - cols * cellSize) / 2;
+        int cellSize = Math.min(availableWidth / cols, getHeight() / rows);
+        int xOffset = (availableWidth - cols * cellSize) / 2;
         int yOffset = (getHeight() - rows * cellSize) / 2;
 
         // === BACKGROUND ASSETS ===
@@ -173,7 +176,6 @@ class MapPanel extends JPanel {
                     } else if (s instanceof src.Station.PlateStorage ps && !ps.isEmpty()) {
                         topItem = ps.peekPlate();
                     }
-                    // kalau mau, bisa tambahkan WashingStation dll
 
                     if (topItem != null) {
                         BufferedImage itemIcon = AssetManager.getItemIcon(topItem);
@@ -271,12 +273,14 @@ class MapPanel extends JPanel {
         drawOrdersPanel(g);
     }
 
-    // Menggambar HUD sederhana di pojok kiri atas
+    // Menggambar HUD sederhana di pojok kanan atas
     private void drawHUD(Graphics g) {
         g.setColor(Color.BLACK);
         g.setFont(g.getFont().deriveFont(Font.BOLD, 14f));
 
-        int hudX = 10;
+        // sejajar dengan panel ORDERS
+        int cardWidth = 230;   
+        int hudX = getWidth() - cardWidth - 15;
         int hudY = 20;
 
         // === Stage info ===
@@ -285,23 +289,23 @@ class MapPanel extends JPanel {
             int timeLeft = gameLoop.getRemainingStageSeconds();
 
             g.drawString("Stage: " + stageName, hudX, hudY);
-            hudY += 15;
+            hudY += 16;
 
             // format waktu mm:ss 
             int mm = timeLeft / 60;
             int ss = timeLeft % 60;
             String timeStr = String.format("Time: %02d:%02d", mm, ss);
             g.drawString(timeStr, hudX, hudY);
-            hudY += 15;
+            hudY += 16;
         }
 
         // Score
         g.drawString("Score: " + scoreManager.getScore(), hudX, hudY);
-        hudY += 15;
+        hudY += 16;
 
         // Jumlah order aktif
         g.drawString("Active Orders: " + orderManager.getActiveOrders().size(), hudX, hudY);
-        hudY += 15;
+        hudY += 16;
 
     }
 
@@ -315,7 +319,7 @@ class MapPanel extends JPanel {
         int panelW = getWidth();
         int cardWidth  = 230;
         int cardX      = panelW - cardWidth - 15; // jarak 15px dari kanan
-        int y          = 20;
+        int y          = 20 + 4 * 16 + 12;
 
         // === Header "ORDERS" ===
         g.setFont(g.getFont().deriveFont(Font.BOLD, 14f));

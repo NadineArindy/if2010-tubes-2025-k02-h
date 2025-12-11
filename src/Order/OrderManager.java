@@ -14,7 +14,7 @@ public class OrderManager {
     private int nextId = 1;
     private List<Recipe> availableRecipes;
     private int failedStreak = 0;
-    public static final int DEFAULT_ORDER_TIME = 60;
+    public static final int DEFAULT_ORDER_TIME = 100;
 
     public List<Order> getActiveOrders() {
         return new ArrayList<>(activeOrders);

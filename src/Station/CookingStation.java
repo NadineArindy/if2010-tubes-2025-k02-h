@@ -1,6 +1,7 @@
 package src.Station;
 
 import src.Game.GameContext;
+import src.Game.HudUtil;
 import src.Game.StationType;
 import src.Ingredients.Cookable;
 import src.Ingredients.IngredientState;
@@ -17,6 +18,7 @@ public class CookingStation extends Workstation {
     private int remainingTime;
     private boolean cookedStageTriggered;
     private boolean burnedStageTriggered;
+    private KitchenUtensils lastCookingUtensil;
     public static final int COOKING_TIME = 12_000;
     public static final int BURNING_TIME = 24_000;
 
@@ -27,6 +29,7 @@ public class CookingStation extends Workstation {
         this.remainingTime = 0;
         this.cookedStageTriggered = false;
         this.burnedStageTriggered = false;
+        this.lastCookingUtensil = null;
     }
 
     public boolean isCooking() {
@@ -66,8 +69,20 @@ public class CookingStation extends Workstation {
 
     private void startCooking(KitchenUtensils utensil){
         this.cookingUtensil = utensil;
-        this.remainingTime = 0;
         this.isCooking = true;
+
+        boolean resumeSameUtensil = (utensil == lastCookingUtensil)   // objeknya sama
+                                    && remainingTime > 0              // sudah dalam proses
+                                    && !burnedStageTriggered;         // belum gosong
+
+        if (resumeSameUtensil) {
+            GameContext.getMessenger().info(
+                    "Cooking: melanjutkan masak di " + utensil.getName()
+            );
+            return;
+        }
+
+        this.remainingTime = 0;
         this.cookedStageTriggered = false;
         this.burnedStageTriggered = false;
 
@@ -91,6 +106,7 @@ public class CookingStation extends Workstation {
 
     private void stopCooking(){
         this.isCooking = false;
+        this.lastCookingUtensil = this.cookingUtensil;
         this.cookingUtensil = null;
     }
 
@@ -267,12 +283,24 @@ public class CookingStation extends Workstation {
             Item taken = removeTopItem();
             chef.setInventory(taken);
 
+            String message = HudUtil.formatHeldItem(utensilOnTable2);
+
             if (utensilOnTable2 == cookingUtensil) {
                 stopCooking();
-                GameContext.getMessenger().info(
-                        "Cooking: " + utensilOnTable2.getName() +
-                        " diambil dari CookingStation, proses memasak dihentikan."
-                );
+                
+                if (burnedStageTriggered) {
+                    GameContext.getMessenger().info(
+                        "Cooking: ingredients BURNED!, " + message 
+                    );
+                } else if (cookedStageTriggered && !burnedStageTriggered) {
+                    GameContext.getMessenger().info(
+                        "Cooking: proses masak selesai, " + message  
+                    );
+                } else {
+                    GameContext.getMessenger().info(
+                        "Cooking: proses masak dihentikan, " + message 
+                    );
+                }
             } else {
                 GameContext.getMessenger().info(
                         utensilOnTable2.getName() +
