@@ -1,7 +1,9 @@
 package src.Station;
 
+import src.Game.GameContext;
 import src.Game.StationType;
 import src.Ingredients.Cookable;
+import src.Ingredients.IngredientState;
 import src.Item.Item;
 import src.Item.KitchenUtensils;
 import src.Item.Plate;
@@ -39,6 +41,7 @@ public class CookingStation extends Workstation {
         return cookingUtensil;
     }
 
+    // Cek apakah utensil ada ingredients yang bisa dimasak
     private boolean hasCookableContents(KitchenUtensils utensil){
         for(Preparable p : utensil.getContents()){
             if(p instanceof Cookable){
@@ -55,7 +58,7 @@ public class CookingStation extends Workstation {
                 try {
                     cookable.cook();
                 } catch (RuntimeException e) {
-                    
+                    // Jika ada yang tidak valid, abaikan
                 }
             }
         }
@@ -68,7 +71,22 @@ public class CookingStation extends Workstation {
         this.cookedStageTriggered = false;
         this.burnedStageTriggered = false;
 
-        advanceCookables(utensil);
+        // Ubah state awal menjadi COOKING
+        for (Preparable p : utensil.getContents()) {
+            if (p instanceof Cookable cookable) {
+                IngredientState state = p.getState();
+
+                // Rice: RAW -> COOKING
+                // Shrimp: CHOPPED -> COOKING
+                if (state == IngredientState.RAW || state == IngredientState.CHOPPED) {
+                    try {
+                        cookable.cook();
+                    } catch (RuntimeException e) {
+                        // Jika ada yang tidak valid, abaikan 
+                    }
+                }
+            }
+        }
     }
 
     private void stopCooking(){
@@ -94,6 +112,28 @@ public class CookingStation extends Workstation {
         }
     }
 
+    /**
+     * Progress untuk bar di atas CookingStation.
+     * Mengembalikan:
+     * - -1 kalau tidak ada proses masak yang sedang berjalan
+     * - 0.0 s/d 1.0 untuk progress menuju COOKING_TIME (bukan sampai gosong)
+     */
+
+    @Override
+    public float getProgress() {
+        if (!isCooking) { 
+            return -1f;
+        }
+
+        if (remainingTime <= 0 || remainingTime > COOKING_TIME) {
+            return -1f;
+        }
+
+        float done = COOKING_TIME - remainingTime;
+        return done / (float) COOKING_TIME;
+    }
+
+
     @Override
     public void interact(Chef chef) {
         if(chef == null){
@@ -102,6 +142,31 @@ public class CookingStation extends Workstation {
 
         Item inHand = chef.getInventory();
         Item onTop = peekTopItem(); 
+        
+        //CASE 0: Chef pegang ingredient, di meja ada cooking utensil
+        if (inHand instanceof Preparable prep && onTop instanceof KitchenUtensils device) {
+            KitchenUtensils utensilOnTable = (KitchenUtensils) device;
+            try {
+                utensilOnTable.addIngredient(prep);
+                chef.setInventory(null);
+
+                if (hasCookableContents(utensilOnTable)) {
+                    startCooking(utensilOnTable);
+                    GameContext.getMessenger().info(
+                        "Cooking: " + prep.getClass().getSimpleName() +
+                        " dimasukkan ke " + utensilOnTable.getName() +
+                        " dan mulai dimasak."
+                    );
+                } 
+
+            } catch (RuntimeException e) {
+                GameContext.getMessenger().error(
+                    "Gagal memasukkan " + prep.getClass().getSimpleName()
+                    + " ke " + utensilOnTable.getName()
+                );    
+            }
+            return;
+        }
 
         //CASE 1: Chef memiliki piring bersih di tangan dan ada item di workstation tapi tidak berada di dalam utensil
         if (inHand instanceof Plate && ((Plate) inHand).isClean() && onTop instanceof Preparable && !(onTop instanceof KitchenUtensils)) {
@@ -112,6 +177,11 @@ public class CookingStation extends Workstation {
                 removeTopItem();
                 addItem(plateInHand);
                 chef.setInventory(null);
+
+                GameContext.getMessenger().info(
+                    "Plating: " + preparable.getClass().getSimpleName() +
+                    " dipindah ke plate di CookingStation."
+                );
             } catch (RuntimeException e){}
             return;
         }
@@ -125,7 +195,17 @@ public class CookingStation extends Workstation {
                     plateInHand2.addIngredient(p);
                 }
                 utensilOnTable.getContents().clear();
-            } catch (RuntimeException e){}
+
+                GameContext.getMessenger().info(
+                        "Plating: ingredients dari " + utensilOnTable.getName() +
+                        " dipindah ke plate di tangan chef."
+                );
+            } catch (RuntimeException e){
+                GameContext.getMessenger().error(
+                        "Gagal memindahkan isi " + utensilOnTable.getName() +
+                        " ke plate: " + e.getMessage()
+                );
+            }
             return;
         }
 
@@ -140,21 +220,48 @@ public class CookingStation extends Workstation {
                     plateOnTable.addIngredient(p);
                 }
                 utensilInHand.getContents().clear();
-            } catch (RuntimeException e){}
+
+
+            GameContext.getMessenger().info(
+                    "Plating: ingredients dari " + utensilInHand.getName() +
+                    " dipindah ke plate di CookingStation."
+            );
+
+            } catch (RuntimeException e){
+                GameContext.getMessenger().error(
+                        "Gagal memindahkan isi " + utensilInHand.getName() +
+                        " ke plate: " + e.getMessage()
+                );
+            }
             return;
         }
 
+        //CASE 4: Chef pegang utensil dan station punya slot
         if (inHand instanceof KitchenUtensils && !isFull()) {
             KitchenUtensils utensilInHand2 = (KitchenUtensils) inHand;
             if (addItem(utensilInHand2)) {
                 chef.setInventory(null);
                 if (hasCookableContents(utensilInHand2)) {
                     startCooking(utensilInHand2);
+                    GameContext.getMessenger().info(
+                            "Cooking: " + utensilInHand2.getName() +
+                            " diletakkan di CookingStation dan mulai memasak."
+                    );
+                } else {
+                    GameContext.getMessenger().info(
+                            utensilInHand2.getName() +
+                            " diletakkan di CookingStation."
+                    );
                 }
+            } else {
+                GameContext.getMessenger().error(
+                        "CookingStation penuh, tidak bisa meletakkan " + utensilInHand2.getName() + "."
+                );
             }
             return;
         }
 
+        //CASE 5: Chef tangan kosong, di station ada utensil
         if (inHand == null && onTop instanceof KitchenUtensils) {
             KitchenUtensils utensilOnTable2 = (KitchenUtensils) onTop;
             Item taken = removeTopItem();
@@ -162,6 +269,15 @@ public class CookingStation extends Workstation {
 
             if (utensilOnTable2 == cookingUtensil) {
                 stopCooking();
+                GameContext.getMessenger().info(
+                        "Cooking: " + utensilOnTable2.getName() +
+                        " diambil dari CookingStation, proses memasak dihentikan."
+                );
+            } else {
+                GameContext.getMessenger().info(
+                        utensilOnTable2.getName() +
+                        " diambil dari CookingStation."
+                );
             }
             return;
         }

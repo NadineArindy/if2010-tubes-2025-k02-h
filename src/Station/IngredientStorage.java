@@ -2,6 +2,7 @@ package src.Station;
 
 import java.lang.reflect.InvocationTargetException;
 
+import src.Game.GameContext;
 import src.Game.StationType;
 import src.Item.Item;
 import src.Item.KitchenUtensils;
@@ -37,6 +38,7 @@ public class IngredientStorage extends Station {
         return itemOnTop;
     }
 
+    // Membuat instance ingredient baru dari ingredientClass
     private Preparable dispenseIngredient(){
         try {
             return ingredientClass.getDeclaredConstructor().newInstance();
@@ -54,6 +56,11 @@ public class IngredientStorage extends Station {
         Item inHand = chef.getInventory();
         Item onTop = itemOnTop; 
 
+        System.out.println("IngredientStorage[" + getId() + "] interact: " +
+                            "inHand=" + (inHand == null ? "null" : inHand.getClass().getSimpleName()) +
+                            ", onTop=" + (onTop == null ? "null" : onTop.getClass().getSimpleName()));
+
+
         //CASE 1: Chef memiliki piring bersih di tangan dan ada item di workstation tapi tidak berada di dalam utensil
         if(inHand instanceof Plate && ((Plate) inHand).isClean() && onTop instanceof Preparable && !(onTop instanceof KitchenUtensils)){
             Plate plateInHand = (Plate) inHand;
@@ -63,7 +70,17 @@ public class IngredientStorage extends Station {
                 itemOnTop = null;
                 itemOnTop = plateInHand;
                 chef.setInventory(null);
-            } catch (RuntimeException e){}
+            
+                GameContext.getMessenger().info(
+                    "Plating: " + preparable.getClass().getSimpleName() +
+                    " diambil dari rak dan diletakkan di atas plate."
+                );
+
+            } catch (RuntimeException e){
+                GameContext.getMessenger().error(
+                    "Gagal plating di IngredientStorage: " + e.getMessage()
+                );
+            }
             return;
         }
 
@@ -76,7 +93,19 @@ public class IngredientStorage extends Station {
                     plateInHand2.addIngredient(p);
                 }
                 utensilOnTable.getContents().clear();
-            } catch (RuntimeException e){}
+
+                GameContext.getMessenger().info(
+                    "Plating: ingredients dari " + utensilOnTable.getName() +
+                    " dipindah ke plate di tangan chef."
+                );
+
+            } catch (RuntimeException e){
+                GameContext.getMessenger().error(
+                    "Gagal memindahkan isi " + utensilOnTable.getName() +
+                    " ke plate: " + e.getMessage()
+                );
+
+            }
             return;
         }
 
@@ -89,10 +118,21 @@ public class IngredientStorage extends Station {
                     plateOnTable.addIngredient(p);
                 }
                 utensilInHand.getContents().clear();
-            } catch (RuntimeException e){}
+
+                GameContext.getMessenger().info(
+                    "Plating: ingredients dari " + utensilInHand.getName() +
+                    " dipindah ke plate di atas rak."
+                );
+            } catch (RuntimeException e){
+                GameContext.getMessenger().error(
+                    "Gagal memindahkan isi " + utensilInHand.getName() +
+                    " ke plate di rak: " + e.getMessage()
+                );
+            }
             return;
         }
 
+        //CASE 4: Chef tangan kosong
         if(inHand == null){
             if(onTop != null){
                 chef.setInventory(onTop);
@@ -107,10 +147,19 @@ public class IngredientStorage extends Station {
             return;
         }
 
+        // CASE 5: Chef pegang item, rak kosong -> taruh item di atas rak
         if(onTop == null){
             itemOnTop = inHand;
             chef.setInventory(null);
+
+            GameContext.getMessenger().info(
+                    inHand.getClass().getSimpleName() +
+                    " diletakkan di atas IngredientStorage."
+            );
+            
             return;
         }
+
+        System.out.println("[IngredientStorage " + getId() + "] interact by " + chef.getName());
     }
 }

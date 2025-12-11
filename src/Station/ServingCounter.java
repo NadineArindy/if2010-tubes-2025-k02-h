@@ -4,6 +4,7 @@ import java.util.Set;
 
 import src.Exception.InvalidDataException;
 import src.Exception.OrderNotFoundException;
+import src.Game.GameContext;
 import src.Game.ScoreManager;
 import src.Game.StationType;
 import src.Item.Dish;
@@ -42,6 +43,14 @@ public class ServingCounter extends Station {
         this.kitchenLoop = kitchenLoop;
     }
 
+    public ScoreManager getScoreManager() {
+        return scoreManager;
+    }
+
+    public void setScoreManager(ScoreManager scoreManager) {
+        this.scoreManager = scoreManager;
+    }
+
     @Override
     public void interact(Chef chef) {   
         if(chef == null || kitchenLoop == null || orderManager == null || scoreManager == null){
@@ -57,6 +66,7 @@ public class ServingCounter extends Station {
         Plate plate = (Plate) inHand;
 
         if(!plate.isClean()){
+            GameContext.getMessenger().error("Tidak bisa serve: plate masih kotor.");
             return;
         }
 
@@ -65,6 +75,8 @@ public class ServingCounter extends Station {
         try{
             dish = builDishFromPlate(plate);
         } catch (InvalidDataException e){
+            GameContext.getMessenger().error("Serve gagal: " + e.getMessage());
+
             cleanupPlate(plate);
             chef.setInventory(null);
             kitchenLoop.schedulePlateReturn(plate);
@@ -74,18 +86,27 @@ public class ServingCounter extends Station {
         try {
             int reward = orderManager.processServedDish(dish);
             scoreManager.addScore(reward);
-            System.out.println("Score updated: " + scoreManager.getScore());
+            System.out.println("Order berhasil! +" + reward + " skor. Total: " + scoreManager.getScore());
+            GameContext.getMessenger().info(
+                "Order berhasil! +" + reward + " skor. Total: " + scoreManager.getScore()
+            );
+            orderManager.spawnRandomOrder();
         } catch (OrderNotFoundException | InvalidDataException e) {
             // pinalti jika dish tidak sesuai dengan order yang ada
-            scoreManager.subtractScore(20); // Contoh penalti 20 poin
-            System.out.println("Incorrect dish. Penalty applied. Score: " + scoreManager.getScore());
+            int penalty = 20;
+            scoreManager.subtractScore(penalty); // Contoh penalti 20 poin
+            System.out.println("Dish salah pesanan! -" + penalty + " skor. Total: " + scoreManager.getScore());
+            GameContext.getMessenger().error(
+               "Dish salah pesanan! -" + penalty + " skor. Total: " + scoreManager.getScore()
+            );
         }
 
-        cleanupPlate(plate);
-        chef.setInventory(null);
-        kitchenLoop.schedulePlateReturn(plate);
+        cleanupPlate(plate); // buang isi plate
+        chef.setInventory(null); // tangan chef kosong
+        kitchenLoop.schedulePlateReturn(plate); // piring kembali ke storage setelah 10 detik
     }
 
+    // Mengubah isi dari plate menjadi sebuah dish
     public Dish builDishFromPlate(Plate plate) throws InvalidDataException{
         Set<Preparable> contents = plate.getContents();
         if(contents == null || contents.isEmpty()){
@@ -100,6 +121,7 @@ public class ServingCounter extends Station {
         return dish;
     }
 
+    // Mengosongkan isi plate
     public void cleanupPlate(Plate plate){
         plate.getContents().clear();
     }

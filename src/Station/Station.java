@@ -35,5 +35,16 @@ public abstract class Station {
         return type;
     }
 
+    // Dipanggil ketika chef meninggalkan station
+    public void onChefLeave(Chef chef) {
+        // Default implementation: do nothing
+    }
+    
+    // Progres kerja di station 
+    // Nilai -1: station ini tidak pakai progres.
+    public float getProgress(){
+        return -1f;
+    }
+
     public abstract void interact(Chef chef);
 }

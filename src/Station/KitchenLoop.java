@@ -21,10 +21,13 @@ public class KitchenLoop {
         this.scoreManager = scoreManager;
     }
 
+    // Menjadwalkan 1 piring untuk kembali lagi ke PlateStorage
     public void schedulePlateReturn(Plate plate) {
         if (plate == null) {
             return;
         }
+
+        // Mulai timer baru untuk piring ini
         returningPlates.add(new ReturningPlate(plate, PLATE_RETURN_TIME));
     }
 
@@ -37,6 +40,8 @@ public class KitchenLoop {
         while (iterator.hasNext()) {
             ReturningPlate returningPlate = iterator.next();
             returningPlate.tick(deltaTime);
+
+            // jika timer piring ini sudah selesai → kembalikan ke rak
             if (returningPlate.isReady()) {
                 Plate plate = returningPlate.getPlate();
 
@@ -44,11 +49,13 @@ public class KitchenLoop {
                 plate.setClean(false);
                 plateStorage.addPlate(plate);
 
+                // hapus dari list piring yang sedang di-serve
                 iterator.remove();
             }
         }
     }
     
+    // Menyimpan data piring yang sedang di-serve
     private static class ReturningPlate {
         private final Plate plate;
         private int remainingTime;

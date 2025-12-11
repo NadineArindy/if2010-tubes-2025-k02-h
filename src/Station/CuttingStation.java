@@ -1,5 +1,6 @@
 package src.Station;
 
+import src.Game.GameContext;
 import src.Game.StationType;
 import src.Ingredients.Chopable;
 import src.Item.Item;
@@ -13,6 +14,7 @@ public class CuttingStation extends Workstation {
     private Preparable currentIngredient;
     private boolean isCutting;
     private int remainingTime;
+    private Chef workingChef;
     public static final int CUTTING_TIME = 3000; 
 
     public CuttingStation(String id, Position position, char symbol, StationType type, int capacity, int processTime) {
@@ -20,6 +22,7 @@ public class CuttingStation extends Workstation {
         this.currentIngredient = null;
         this.isCutting = false;
         this.remainingTime = 0;
+        this.workingChef = null;
     }
 
     public boolean isCutting() {
@@ -48,6 +51,11 @@ public class CuttingStation extends Workstation {
 
     public void pauseCutting(){
         isCutting = false;
+
+        if(workingChef != null){
+            workingChef.stopBusy();
+            workingChef = null;
+        }
     }
 
     public void update(int deltaTime){
@@ -66,19 +74,52 @@ public class CuttingStation extends Workstation {
             return;
         }
 
-        //mengubah state ingredient menjadi terpotong
+        // Mengubah state ingredient menjadi terpotong (CHOPPED)
         if(currentIngredient instanceof Chopable){
             Chopable chopable = (Chopable) currentIngredient;
             try{
                 chopable.chop();
             } catch (RuntimeException e){
-                //jika tidak bisa dipotong, abaikan
+                GameContext.getMessenger().error(
+                    "Gagal memotong " + currentIngredient.getClass().getSimpleName() +
+                    ": " + e.getMessage()
+                );
             }
         }
 
         isCutting = false;
         remainingTime = 0;
+
+        if(workingChef != null){
+            workingChef.stopBusy();
+            workingChef = null;
+        }
     }
+
+    // Jika chef meninggalkan station, proses berhenti sementara
+    @Override
+    public void onChefLeave(Chef chef) {
+        if(chef == workingChef && isCutting){
+            pauseCutting();
+        }
+    }
+
+    @Override
+    public float getProgress() {
+        // Jika tidak ada piring yang sedang dicuci, tidak ada progress
+        if (currentIngredient == null) {
+            return -1f;
+        }
+
+        if (remainingTime <= 0 || remainingTime > CUTTING_TIME) {
+            return -1f;
+        }
+
+        // Hitung berapa persen progress mencuci yang sudah selesai (0.0 - 0.1)
+        float done = CUTTING_TIME - remainingTime;
+        return done / (float) CUTTING_TIME;
+    }
+
 
     @Override
     public void interact(Chef chef) {
@@ -98,7 +139,16 @@ public class CuttingStation extends Workstation {
                 removeTopItem();
                 addItem(plateInHand);
                 chef.setInventory(null);
-            } catch (RuntimeException e){}
+
+                GameContext.getMessenger().info(
+                    "Plating: " + preparable.getClass().getSimpleName() +
+                    " dipindah ke plate di CuttingStation."
+                );
+            } catch (RuntimeException e){
+                GameContext.getMessenger().error(
+                    "Gagal plating di CuttingStation: " + e.getMessage()
+                );
+            }
             return;
         }
 
@@ -109,9 +159,19 @@ public class CuttingStation extends Workstation {
             try{
                 for(Preparable p : utensilOnTable.getContents()){
                     plateInHand2.addIngredient(p);
+
+                GameContext.getMessenger().info(
+                    "Plating: ingredients dari " + utensilOnTable.getName() +
+                    " dipindah ke plate di tangan chef."
+                );
                 }
                 utensilOnTable.getContents().clear();
-            } catch (RuntimeException e){}
+            } catch (RuntimeException e){
+                GameContext.getMessenger().error(
+                    "Gagal memindahkan isi " + utensilOnTable.getName() +
+                    " ke plate: " + e.getMessage()
+                );
+            }
             return;
         }
 
@@ -124,30 +184,55 @@ public class CuttingStation extends Workstation {
                     plateOnTable.addIngredient(p);
                 }
                 utensilInHand.getContents().clear();
-            } catch (RuntimeException e){}
+
+                GameContext.getMessenger().info(
+                    "Plating: ingredients dari " + utensilInHand.getName() +
+                    " dipindah ke plate di CuttingStation."
+                );
+            } catch (RuntimeException e){
+                GameContext.getMessenger().error(
+                    "Gagal memindahkan isi " + utensilInHand.getName() +
+                    " ke plate: " + e.getMessage()
+                );
+            }
             return;
         }
 
+        //CASE 4: Chef pegang ingredient chopable, station kosong
         if(inHand instanceof Preparable && inHand instanceof Chopable && currentIngredient == null && !isCutting){
             Preparable preparable2 = (Preparable) inHand;
-            // Cek lagi untuk memastikan cast ke Chopable aman, meskipun sudah dicek di kondisi
             if (preparable2 instanceof Chopable) {
                 currentIngredient = preparable2;
                 chef.setInventory(null);
                 remainingTime = CUTTING_TIME;
                 isCutting = true;
+
+                workingChef = chef;
+                chef.startBusy();
+
                 return;
             }
         }
 
+        //CASE 5: Chef tangan kosong, ingredient sudah selesai dipotong
         if (inHand == null && currentIngredient != null && !isCutting && remainingTime <= 0) {
             chef.setInventory((Item) currentIngredient);
+            GameContext.getMessenger().info(
+                "Cutting: hasil potongan "
+                + currentIngredient.getClass().getSimpleName()
+                + " diambil oleh chef."
+            );
             currentIngredient = null;
             return;
         }
 
+        //CASE 6: Chef tangan kosong, ada ingredient tapi proses sedang pause
         if (inHand == null && currentIngredient != null && !isCutting && remainingTime > 0) {
             isCutting = true;
+
+            workingChef = chef;
+            chef.startBusy();
+            
             return;
         }
 
