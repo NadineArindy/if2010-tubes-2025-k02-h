@@ -5,7 +5,7 @@ import src.Exception.InvalidIngredientStateException;
 public class Rice extends Ingredient implements Cookable{
 
     public Rice() {
-        super("Rice");
+        this("Rice");
     }
     
     public Rice(String name) {
@@ -33,6 +33,10 @@ public class Rice extends Ingredient implements Cookable{
     @Override
     public boolean isReady() {
         return isCooked();
+    }
+
+    public String getName() {
+        return "Rice";
     }
 
 }

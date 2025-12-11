@@ -5,7 +5,7 @@ import src.Exception.InvalidIngredientStateException;
 public class Shrimp extends Ingredient implements Chopable, Cookable {
 
     public Shrimp() {
-        super("Shrimp");
+        this("Shrimp");
     }
     
     public Shrimp(String name) {
@@ -48,5 +48,9 @@ public class Shrimp extends Ingredient implements Chopable, Cookable {
     @Override
     public boolean isReady() {
         return isCooked();
+    }
+
+    public String getName() {
+        return "Shrimp";
     }
 }

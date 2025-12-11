@@ -5,7 +5,7 @@ import src.Exception.InvalidIngredientStateException;
 public class Cucumber extends Ingredient implements Chopable {
 
     public Cucumber(){
-        super("Cucumber");
+        this("Cucumber");
     }
     
     public Cucumber(String name) {
@@ -30,5 +30,9 @@ public class Cucumber extends Ingredient implements Chopable {
     @Override
     public boolean isReady() {
         return isChopped();
+    }
+
+    public String getName() {
+        return "Cucumber";
     }
 }

@@ -1,5 +1,7 @@
 package src.chef;
 
+import src.Game.GameContext;
+import src.Game.HudUtil;
 import src.Game.GameMap;
 import src.Game.Tile;
 import src.Item.Item;
@@ -27,17 +29,35 @@ public class Chef {
     public Item getInventory() { return inventory; }
     public ActionState getCurrentAction() { return currentAction; }
 
+    // Mengatur item yang dipegang chef
     public void setInventory(Item item) {
         this.inventory = item;
+
+        GameContext.getMessenger().info(
+            name + " now holds: " + HudUtil.formatHeldItem(item)
+        );
     }
 
     public boolean isBusy() {
         return currentAction != ActionState.IDLE;
     }
 
+    // Memindahkan chef ke arah tertentu jika tidak sedang busy
     public void move(Direction dir, GameMap map, Chef[] others) {
-        if (isBusy()) return;
+        // Cek apakah chef sedang busy
+        if (isBusy()){
+            Tile tile = map.getTileAt(position.getX(), position.getY());
+            if(tile != null && tile.hasStation()){
+                Station station = tile.getStation();
+                if(station != null){
+                    station.onChefLeave(this);
+                }
+            }
 
+            stopBusy();
+        }
+
+        // Hitung posisi baru berdasarkan arah
         int newX = position.getX() + dir.dx;
         int newY = position.getY() + dir.dy;
 
@@ -45,6 +65,7 @@ public class Chef {
 
         if (!map.isWalkable(newX, newY)) return;
 
+        // Cek tabrakan dengan chef lain
         if(others != null){
             for (Chef other : others) {
                 if(other == null || other == this) continue;
@@ -57,23 +78,37 @@ public class Chef {
             }
         }
 
+        // Update posisi chef
         position.setX(newX);
         position.setY(newY);
     }
 
+    // Interaksi chef dengan station di depannya
     public void interact(GameMap map) {
         if(map == null) return;
-        if (isBusy()) return;
+        if (isBusy()) { 
+            GameContext.getMessenger().error(name + " sedang busy, tidak bisa berinteraksi.");
+            return;
+        }
 
+        // Lihat tile di depan chef
         Position front = getFrontPosition();
         Tile tile = map.getTileAt(front.getX(), front.getY());
-        if (tile == null) return;
+        if (tile == null) {
+            GameContext.getMessenger().error(name + " tidak ada tile di depan.");
+            return;
+        }
+
+        System.out.println(name + " interact at " + front + " tileType=" + tile.getType() + " hasStation=" + tile.hasStation());
 
         if (tile.hasStation()) {
             Station station = tile.getStation();
             if(station != null){
+                GameContext.getMessenger().info(name + " berinteraksi dengan " + station.getClass().getSimpleName());
                 station.interact(this);
-}
+            } else {
+                GameContext.getMessenger().error(name + " tidak ada station di tile depan.");
+            }
         } else {
             // pick up / put down logic
             handleFloorInteraction(tile);
@@ -98,4 +133,13 @@ public class Chef {
     public enum ActionState {
         IDLE, BUSY
     }
+
+    public void startBusy() {
+        this.currentAction = ActionState.BUSY;
+    }
+
+    public void stopBusy() {
+        this.currentAction = ActionState.IDLE;
+    }
+
 }

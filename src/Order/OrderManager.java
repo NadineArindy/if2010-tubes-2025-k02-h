@@ -72,6 +72,7 @@ public class OrderManager {
         if (o.isExpired()) {
             activeOrders.remove(o);
             totalPenalty += o.getPenalty(); // Jumlahkan penaltinya
+            spawnRandomOrder(); // Spawn order baru sebagai pengganti
         }
     }
     return totalPenalty;
@@ -101,8 +102,28 @@ public class OrderManager {
         // Nilai reward/time limit bisa hardcode atau ambil dari properti Recipe jika ada
         int reward = 100; // Contoh
         int penalty = 50; 
-        int timeLimit = 60; 
+        int timeLimit = 100;
 
         createOrder(randomRecipe, reward, penalty, timeLimit);
     }
+
+    public List<Recipe> getAvailableRecipes() {
+    return availableRecipes;
+}
+
+/**
+ * Cari nama resep yang cocok dengan komponen dish.
+ * Kalau tidak ada yang match → return null.
+ */
+public String findMatchingRecipeName(List<Preparable> comps) {
+    if (availableRecipes == null || comps == null) return null;
+
+    for (Recipe r : availableRecipes) {
+        if (r.matches(comps)) {
+            return r.getName();
+        }
+    }
+    return null;
+}
+
 }

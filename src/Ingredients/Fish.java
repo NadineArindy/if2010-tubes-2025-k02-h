@@ -5,7 +5,7 @@ import src.Exception.InvalidIngredientStateException;
 public class Fish extends Ingredient implements Chopable{
 
     public Fish() {
-        super("Fish");
+        this("Fish");
     }
 
     public Fish(String name) {
@@ -32,4 +32,7 @@ public class Fish extends Ingredient implements Chopable{
         return isChopped();
     }
     
+    public String getName() {
+        return "Fish";
+    }
 }

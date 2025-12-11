@@ -3,7 +3,7 @@ package src.Ingredients;
 public class Nori extends Ingredient{
 
     public Nori() {
-        super("Nori");
+        this("Nori");
     }
     
     public Nori(String name) {
@@ -13,5 +13,9 @@ public class Nori extends Ingredient{
     @Override
     public boolean isReady() {
         return getState() == IngredientState.RAW;
+    }
+
+    public String getName() {
+        return "Nori";
     }
 }
