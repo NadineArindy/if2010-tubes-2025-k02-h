@@ -77,7 +77,8 @@ public class WashingStation extends Station {
         isWashing = true;
         workingChef = chef;
         chef.startBusy();       // Menandai chef sedang sibuk mencuci
-
+        chef.setCurrentStation(this);
+        
         GameContext.getMessenger().info("Mulai mencuci satu piring...");
     }
 

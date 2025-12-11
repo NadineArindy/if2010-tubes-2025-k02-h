@@ -14,6 +14,7 @@ public class Chef {
     private Direction direction;
     private Item inventory;
     private ActionState currentAction = ActionState.IDLE;
+    private Station currentStation;
 
     public Chef(String id, String name, Position startPos) {
         this.id = id;
@@ -46,14 +47,9 @@ public class Chef {
     public void move(Direction dir, GameMap map, Chef[] others) {
         // Cek apakah chef sedang busy
         if (isBusy()){
-            Tile tile = map.getTileAt(position.getX(), position.getY());
-            if(tile != null && tile.hasStation()){
-                Station station = tile.getStation();
-                if(station != null){
-                    station.onChefLeave(this);
-                }
+            if (currentStation != null) {
+                currentStation.onChefLeave(this);  
             }
-
             stopBusy();
         }
 
@@ -104,13 +100,16 @@ public class Chef {
         if (tile.hasStation()) {
             Station station = tile.getStation();
             if(station != null){
+                this.currentStation = station;
                 GameContext.getMessenger().info(name + " berinteraksi dengan " + station.getClass().getSimpleName());
                 station.interact(this);
             } else {
+                this.currentStation = null;
                 GameContext.getMessenger().error(name + " tidak ada station di tile depan.");
             }
         } else {
             // pick up / put down logic
+            this.currentStation = null;
             handleFloorInteraction(tile);
         }
     }
@@ -140,6 +139,14 @@ public class Chef {
 
     public void stopBusy() {
         this.currentAction = ActionState.IDLE;
+    }
+
+    public Station getCurrentStation() {
+        return currentStation;
+    }
+
+    public void setCurrentStation(Station station) {
+        this.currentStation = station;
     }
 
 }

@@ -50,11 +50,12 @@ public class CuttingStation extends Workstation {
     }
 
     public void pauseCutting(){
+        if(!isCutting) return;
         isCutting = false;
 
         if(workingChef != null){
             workingChef.stopBusy();
-            workingChef = null;
+            workingChef.setCurrentStation(null);
         }
     }
 
@@ -209,6 +210,7 @@ public class CuttingStation extends Workstation {
 
                 workingChef = chef;
                 chef.startBusy();
+                chef.setCurrentStation(this);
 
                 return;
             }
@@ -232,6 +234,7 @@ public class CuttingStation extends Workstation {
 
             workingChef = chef;
             chef.startBusy();
+            chef.setCurrentStation(this);
             
             return;
         }
