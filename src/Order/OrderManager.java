@@ -13,6 +13,8 @@ public class OrderManager {
     private final CopyOnWriteArrayList<Order> activeOrders = new CopyOnWriteArrayList<>();
     private int nextId = 1;
     private List<Recipe> availableRecipes;
+    private int failedStreak = 0;
+    public static final int DEFAULT_ORDER_TIME = 60;
 
     public List<Order> getActiveOrders() {
         return new ArrayList<>(activeOrders);
@@ -67,16 +69,16 @@ public class OrderManager {
     
     // Di OrderManager.java
     public int purgeExpired() {
-    int totalPenalty = 0;
-    for (Order o : activeOrders) {
-        if (o.isExpired()) {
-            activeOrders.remove(o);
-            totalPenalty += o.getPenalty(); // Jumlahkan penaltinya
-            spawnRandomOrder(); // Spawn order baru sebagai pengganti
+        int totalPenalty = 0;
+        for (Order o : activeOrders) {
+            if (o.isExpired()) {
+                activeOrders.remove(o);
+                totalPenalty += o.getPenalty(); // Jumlahkan penaltinya
+                spawnRandomOrder(); // Spawn order baru sebagai pengganti
+            }
         }
+        return totalPenalty;
     }
-    return totalPenalty;
-}
 
     // public int purgeExpired() {
     //     int removed = 0;
@@ -102,28 +104,37 @@ public class OrderManager {
         // Nilai reward/time limit bisa hardcode atau ambil dari properti Recipe jika ada
         int reward = 100; // Contoh
         int penalty = 50; 
-        int timeLimit = 100;
+        int timeLimit = DEFAULT_ORDER_TIME;
 
         createOrder(randomRecipe, reward, penalty, timeLimit);
     }
 
     public List<Recipe> getAvailableRecipes() {
-    return availableRecipes;
-}
-
-/**
- * Cari nama resep yang cocok dengan komponen dish.
- * Kalau tidak ada yang match → return null.
- */
-public String findMatchingRecipeName(List<Preparable> comps) {
-    if (availableRecipes == null || comps == null) return null;
-
-    for (Recipe r : availableRecipes) {
-        if (r.matches(comps)) {
-            return r.getName();
-        }
+        return availableRecipes;
     }
-    return null;
-}
+
+    //Cari nama resep yang cocok dengan komponen dish.
+    public String findMatchingRecipeName(List<Preparable> comps) {
+        if (availableRecipes == null || comps == null) return null;
+
+        for (Recipe r : availableRecipes) {
+            if (r.matches(comps)) {
+                return r.getName();
+            }
+        }
+        return null;
+    }
+
+    public int getFailedStreak() {
+        return failedStreak;
+    }
+
+    public void registerFailedOrder() {
+        failedStreak++;
+    }
+
+    public void registerCompletedOrder() {
+        failedStreak = 0; // reset jika ada order yang sukses
+    }
 
 }
