@@ -37,11 +37,11 @@ public abstract class Station {
 
     // Dipanggil ketika chef meninggalkan station
     public void onChefLeave(Chef chef) {
-        // Default implementation: do nothing
+        // default: tidak melakukan apapun
     }
     
     // Progres kerja di station 
-    // Nilai -1: station ini tidak pakai progres.
+    // Nilai -1: station ini tidak pakai progress
     public float getProgress(){
         return -1f;
     }

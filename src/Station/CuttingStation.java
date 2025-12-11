@@ -54,6 +54,7 @@ public class CuttingStation extends Workstation {
         isCutting = false;
 
         if(workingChef != null){
+            workingChef.cancelCurrentAction();
             workingChef.stopBusy();
             workingChef.setCurrentStation(null);
         }
@@ -93,6 +94,7 @@ public class CuttingStation extends Workstation {
 
         if(workingChef != null){
             workingChef.stopBusy();
+            workingChef.setCurrentStation(null);
             workingChef = null;
         }
     }
@@ -208,9 +210,7 @@ public class CuttingStation extends Workstation {
                 remainingTime = CUTTING_TIME;
                 isCutting = true;
 
-                workingChef = chef;
-                chef.startBusy();
-                chef.setCurrentStation(this);
+                startCuttingAsync(chef);
 
                 return;
             }
@@ -230,11 +230,7 @@ public class CuttingStation extends Workstation {
 
         //CASE 6: Chef tangan kosong, ada ingredient tapi proses sedang pause
         if (inHand == null && currentIngredient != null && !isCutting && remainingTime > 0) {
-            isCutting = true;
-
-            workingChef = chef;
-            chef.startBusy();
-            chef.setCurrentStation(this);
+            startCuttingAsync(chef);
             
             return;
         }
@@ -252,4 +248,44 @@ public class CuttingStation extends Workstation {
     public void finishProcess() {
         finishCutting();
     }
+
+    private void startCuttingAsync(Chef chef) {
+        if (currentIngredient == null) return;
+
+        if (remainingTime <= 0) {
+            remainingTime = CUTTING_TIME; // mulai dari awal
+        }
+
+        isCutting = true;
+        workingChef = chef;
+
+        chef.setCurrentStation(this);
+        chef.startAsyncAction(() -> {
+            long last = System.currentTimeMillis();
+
+            // Loop di THREAD TERPISAH
+            while (!chef.isActionCancelled() && remainingTime > 0) {
+                try {
+                    Thread.sleep(50); // step kecil biar progress halus
+                } catch (InterruptedException e) {
+                    break;
+                }
+
+                long now = System.currentTimeMillis();
+                int dt = (int) (now - last);
+                last = now;
+
+                remainingTime -= dt;
+            }
+
+            // Keluar loop → berhenti atau selesai
+            isCutting = false;
+
+            if (!chef.isActionCancelled() && remainingTime <= 0) {
+                // selesai motong
+                finishCutting();
+            }
+        });
+    }
+
 }

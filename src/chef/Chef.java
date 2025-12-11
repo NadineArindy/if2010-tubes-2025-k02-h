@@ -14,6 +14,8 @@ public class Chef {
     private Direction direction;
     private Item inventory;
     private ActionState currentAction = ActionState.IDLE;
+    private Thread actionThread;
+    private volatile boolean actionCancelled;
     private Station currentStation;
 
     public Chef(String id, String name, Position startPos) {
@@ -50,7 +52,9 @@ public class Chef {
             if (currentStation != null) {
                 currentStation.onChefLeave(this);  
             }
+            cancelCurrentAction();
             stopBusy();
+            currentStation = null;
         }
 
         // Hitung posisi baru berdasarkan arah
@@ -149,4 +153,35 @@ public class Chef {
         this.currentStation = station;
     }
 
+    public boolean hasRunningAction() {
+        return actionThread != null && actionThread.isAlive();
+    }
+
+    public void startAsyncAction(Runnable body) {
+        // Jangan double start
+        if (hasRunningAction()) return;
+
+        startBusy();
+        actionCancelled = false;
+
+        actionThread = new Thread(() -> {
+            try {
+                body.run();   // isi aksi berdurasi
+            } finally {
+                // kalau aksi selesai (atau dihentikan), chef jadi idle
+                stopBusy();
+                actionThread = null;
+            }
+        }, "Chef-" + id + "-Action");
+
+        actionThread.start();
+    }
+
+    public void cancelCurrentAction() {
+        actionCancelled = true;
+    }
+
+    public boolean isActionCancelled() {
+        return actionCancelled;
+    }
 }

@@ -78,7 +78,7 @@ public class WashingStation extends Station {
         workingChef = chef;
         chef.startBusy();       // Menandai chef sedang sibuk mencuci
         chef.setCurrentStation(this);
-        
+
         GameContext.getMessenger().info("Mulai mencuci satu piring...");
     }
 
@@ -98,8 +98,9 @@ public class WashingStation extends Station {
     public void pauseWashing() {
         isWashing = false;
         if (workingChef != null) {
+            workingChef.cancelCurrentAction();
             workingChef.stopBusy();
-            workingChef = null;
+            workingChef.setCurrentStation(null);
         }
 
         GameContext.getMessenger().info("Proses mencuci dijeda.");
@@ -124,6 +125,7 @@ public class WashingStation extends Station {
         //Chef sudah tidak sibuk
         if(workingChef != null){
             workingChef.stopBusy();
+            workingChef.setCurrentStation(null);
             workingChef = null;
         }
     }
@@ -186,8 +188,51 @@ public class WashingStation extends Station {
 
         // Jika chef tidak memegang apa-apa dan ada piring kotor, mulai mencuci
         if (inHand == null && !isWashing && hasDirtyPlates()) {
-            startWashing(chef);
+            startWashingAsync(chef);
             return;
         }
     }
+
+    private void startWashingAsync(Chef chef) {
+        if (currentPlate == null && dirtyPlates.isEmpty()) {
+            return;
+        }
+
+        if (currentPlate == null) {
+            currentPlate = dirtyPlates.poll();
+        }
+
+        if (remainingWashTime <= 0) {
+            remainingWashTime = WASH_TIME;
+        }
+
+        isWashing = true;
+        workingChef = chef;
+
+        chef.setCurrentStation(this);
+        chef.startAsyncAction(() -> {
+            long last = System.currentTimeMillis();
+
+            while (!chef.isActionCancelled() && remainingWashTime > 0) {
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    break;
+                }
+
+                long now = System.currentTimeMillis();
+                int dt = (int) (now - last);
+                last = now;
+
+                remainingWashTime -= dt;
+            }
+
+            isWashing = false;
+
+            if (!chef.isActionCancelled() && remainingWashTime <= 0) {
+                finishWashing();
+            }
+        });
+    }
+
 }
