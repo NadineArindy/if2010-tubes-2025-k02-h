@@ -1,5 +1,6 @@
 package src.Station;
 
+import src.Game.GameContext;
 import src.Game.StationType;
 import src.Item.Item;
 import src.Item.KitchenUtensils;
@@ -19,6 +20,7 @@ public class TrashStation extends Station {
 
         Item inHand = chef.getInventory();
         if(inHand == null){
+            GameContext.getMessenger().info("Tidak ada yang dibuang, tangan chef kosong.");
             return;
         }
 
@@ -30,14 +32,25 @@ public class TrashStation extends Station {
             return;
         }
 
+        // Buang item di dalam utensil saja
         if(item instanceof KitchenUtensils){
             KitchenUtensils utensil = (KitchenUtensils) item;
             utensil.getContents().clear();
+
+            GameContext.getMessenger().info(
+                "Isi " + utensil.getName() + " dibuang ke tempat sampah, utensil tetap di tangan chef."
+            );
+
             return;
         }
 
+        //Buang item yang ada di tangan chef
         if(chef.getInventory() == item){
+            String name = item.getName() != null ? item.getName() : item.getClass().getSimpleName();
             chef.setInventory(null);
+            GameContext.getMessenger().info(
+                name + " dibuang ke tempat sampah."
+            );
         }
     }
 }

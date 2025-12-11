@@ -5,6 +5,7 @@ import javax.swing.*;
 import java.awt.BorderLayout;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -147,12 +148,14 @@ public class Main {
         GameContext.setMessenger(new GameContext.GameMessenger() {
             @Override
             public void info(String msg) {
+                statusLabel.setForeground(Color.BLACK);
                 statusLabel.setText(msg);
                 System.out.println(msg);
             }
 
             @Override
             public void error(String msg) {
+                statusLabel.setForeground(Color.RED);
                 statusLabel.setText("!!! " + msg);
                 System.err.println(msg);
             }

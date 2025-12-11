@@ -109,6 +109,28 @@ class MapPanel extends JPanel {
                 g.setColor(Color.BLACK);
                 g.drawRect(px, py, cellSize, cellSize);
 
+                // ===== HIGHLIGHT TILE CHEF AKTIF =====
+                if (activeChef != null && activeChef.getPosition() != null) {
+                    Position ap = activeChef.getPosition();
+
+                    // cek apakah tile ini posisi chef aktif
+                    if (ap.getX() == x && ap.getY() == y) {
+                        Graphics2D g2 = (Graphics2D) g;
+
+                        // simpan warna 
+                        Color oldColor = g2.getColor();
+                        Stroke oldStroke = g2.getStroke();
+
+                        // border tebal 
+                        g2.setColor(Color.GREEN);
+                        g2.setStroke(new BasicStroke(3f)); // 3px lebih tebal
+                        g2.drawRect(px + 1, py + 1, cellSize - 2, cellSize - 2);
+
+                        // kembali ke setting lama
+                        g2.setColor(oldColor);
+                        g2.setStroke(oldStroke);
+                    }
+                }
                 // === GAMBAR STATION ===
                 if (tile.hasStation()) {
                     Station s = tile.getStation();
