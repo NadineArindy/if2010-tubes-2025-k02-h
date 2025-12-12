@@ -73,7 +73,22 @@ class MapFactory {
                                 station = new ServingCounter("Serving" + x + y, pos, c, st, null, null, null);
                                 break;
                             case WASHING:
-                                station = new WashingStation("Washing" + x + y, pos, c, st);
+                                Station reuse = null;
+                                if (x > 0) {
+                                    Tile leftTile = map.getTileAt(x - 1, y);  
+                                    if (leftTile != null && leftTile.hasStation()
+                                            && leftTile.getStation() instanceof WashingStation) {
+                                        reuse = leftTile.getStation();
+                                    }
+                                }
+
+                                if (reuse != null) {
+                                    // tile W (kanan) pakai station yang sama dengan W kiri
+                                    station = reuse;
+                                } else {
+                                    // tile W (kiri) buat WashingStation baru
+                                    station = new WashingStation("Washing" + x + y, pos, c, st);
+                                }
                                 break;
                             case INGREDIENT:
                                 Class<? extends Preparable> ingClass = ingredientFor(x, y);

@@ -12,8 +12,11 @@ public class AssetManager {
 
     // ==== TILE / STATION IMAGE ====
     public static BufferedImage floor, wall;
-    public static BufferedImage tileA, tileC, tileR, tileS, tileT, tileW, tileP, tileX;
+    public static BufferedImage tileA, tileC, tileR, tileS, tileT, tileP, tileX;
     public static BufferedImage I_RICE, I_NORI, I_CUCUMBER, I_FISH, I_SHRIMP;
+    public static BufferedImage washingSink; // W kanan
+    public static BufferedImage washingRack; // W kiri 
+
 
     // ==== CHEF ICON ====
     public static BufferedImage chef_A, chef_B;
@@ -50,7 +53,8 @@ public class AssetManager {
             tileR = load("/resources/assets/tiles/R.png");
             tileS = load("/resources/assets/tiles/S.png");
             tileT = load("/resources/assets/tiles/T.png");
-            tileW = load("/resources/assets/tiles/W.png");
+            washingSink = load("/resources/assets/tiles/washingSink.png");
+            washingRack = load("/resources/assets/tiles/washingRack.png");
             tileP = load("/resources/assets/tiles/P.png");
             tileX = load("/resources/assets/tiles/X.png");
             

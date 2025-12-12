@@ -9,6 +9,7 @@ import src.Order.Order;
 import src.Order.OrderManager;
 import src.Station.IngredientStorage;
 import src.Station.Station;
+import src.Station.WashingStation;
 import src.chef.Chef;
 import src.chef.Position;
 
@@ -143,20 +144,34 @@ class MapPanel extends JPanel {
                     if (s instanceof IngredientStorage storage) {
                             // Pakai icon sesuai jenis ingredient
                             baseIcon = AssetManager.getIngredientStorageIcon(storage.getIngredientClass());
+                    } 
+                    // Washing Station
+                    else if (s instanceof WashingStation ws) {
+                        Position basePos = ws.getPosition();
+                        int baseX = basePos.getX();
+                        int baseY = basePos.getY();
+
+                        if (x == baseX && y == baseY) {
+                            // tile W kiri 
+                            baseIcon = AssetManager.washingRack;
                         } else {
-                            // Station lain pakai sprite berdasarkan simbol
-                            baseIcon = switch (s.getSymbol()) {
-                                case 'A' -> AssetManager.tileA;
-                                case 'C' -> AssetManager.tileC;
-                                case 'R' -> AssetManager.tileR;
-                                case 'S' -> AssetManager.tileS;
-                                case 'W' -> AssetManager.tileW;
-                                case 'P' -> AssetManager.tileP;
-                                case 'T' -> AssetManager.tileT;
-                                case 'X' -> AssetManager.tileX;
-                                default   -> null;
-                            };
+                            // tile W kanan
+                            baseIcon = AssetManager.washingSink;
                         }
+                    }
+                    else {
+                        // Station lain pakai sprite berdasarkan simbol
+                        baseIcon = switch (s.getSymbol()) {
+                            case 'A' -> AssetManager.tileA;
+                            case 'C' -> AssetManager.tileC;
+                            case 'R' -> AssetManager.tileR;
+                            case 'S' -> AssetManager.tileS;
+                            case 'P' -> AssetManager.tileP;
+                            case 'T' -> AssetManager.tileT;
+                            case 'X' -> AssetManager.tileX;
+                            default   -> null;
+                        };
+                    }
 
                     // Gambar icon dasar station
                     if (baseIcon != null) {
@@ -191,6 +206,17 @@ class MapPanel extends JPanel {
                     // === PROGRESS BAR STATION ===
                     float progress = s.getProgress();
                     if (progress >= 0f) {
+                        if (s instanceof WashingStation ws) {
+                            Position basePos = ws.getPosition();   // W kiri
+                            int sinkX = basePos.getX() + 1;        // W kanan
+                            int sinkY = basePos.getY();
+
+                            // kalau tile yang sedang digambar bukan sink, SKIP bar
+                            if (x != sinkX || y != sinkY) {
+                                continue;
+                            }
+                        }
+
                         Graphics2D g2 = (Graphics2D) g;
 
                         int barWidth  = cellSize - cellSize / 4;
@@ -377,7 +403,7 @@ class MapPanel extends JPanel {
             g.setFont(g.getFont().deriveFont(Font.PLAIN, 12f));
             textY += 16;
             int remain = o.getRemainingTime();
-            int limit  = 60;
+            int limit  = 100;
             int reward = o.getReward();
 
             g.drawString("Time: " + remain + "s   $" + reward, textX, textY);

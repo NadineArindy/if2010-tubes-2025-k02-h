@@ -9,6 +9,7 @@ import src.Item.Item;
 import src.Item.Plate;
 import src.chef.Chef;
 import src.chef.Position;
+import src.chef.Direction;
 
 public class WashingStation extends Station {
     private final Queue<Plate> dirtyPlates;
@@ -168,6 +169,51 @@ public class WashingStation extends Station {
 
         Item inHand = chef.getInventory();
 
+        // Hitung tile di depan chef
+        Position chefPos = chef.getPosition();
+        Direction dir    = chef.getDirection();
+        int frontX = chefPos.getX() + dir.getDx();
+        int frontY = chefPos.getY() + dir.getDy();
+
+        boolean rackSide  = (frontX == 9  && frontY == 7);   // W kiri
+        boolean sinkSide  = (frontX == 10 && frontY == 7);   // W kanan
+
+        // === W KANAN: INPUT PIRING KOTOR & MENCUCI ===
+        if (sinkSide) {
+            // Chef pegang piring kotor -> masuk antrian cuci
+            if (inHand instanceof Plate plate && !plate.isClean()) {
+                addDirtyPlate(plate);
+                chef.setInventory(null);
+                return;
+            }
+
+            if (inHand == null && !isWashing && hasDirtyPlates()) {
+                startWashingAsync(chef);
+                return;
+            }
+
+            GameContext.getMessenger().info("Tidak ada yang bisa dilakukan di sisi kiri WashingStation.");
+            return;
+        }
+
+        // === W KIRI: AMBIL PIRING BERSIH ===
+        if (rackSide) {
+            // Chef tangan kosong + ada piring bersih -> ambil piring bersih
+            if (inHand == null && hasCleanPlates()) {
+                Plate clean = takeCleanPlate();
+                if (clean != null) {
+                    chef.setInventory(clean);
+                    GameContext.getMessenger().info(
+                        "Chef mengambil satu piring bersih dari WashingStation."
+                    );
+                }
+                return;
+            }
+
+            GameContext.getMessenger().info("Di sisi kanan WashingStation hanya bisa mengambil piring bersih.");
+            return;
+        }
+        
         // Jika chef memegang piring kotor, letakkan di antrian cuci
         if(inHand instanceof Plate && !((Plate) inHand).isClean()){
             Plate plate = (Plate) inHand;
