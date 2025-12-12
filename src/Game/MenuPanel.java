@@ -117,7 +117,7 @@ public class MenuPanel extends JPanel {
         }
 
         int cx = getWidth() / 2;
-        int y = 300;  
+        int y  = (int)(getHeight() * 0.47);
 
         g.setFont(g.getFont().deriveFont(Font.BOLD, 24f));
         drawCentered(g, "Stage Result", cx, y);
