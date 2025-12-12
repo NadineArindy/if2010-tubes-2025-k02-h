@@ -187,18 +187,18 @@ public class Main {
             easyStage = new StageConfig(
                 "Stage 1 - EASY",
                 240,   // durasi 4 menit
-                300,       // target score 
-                3,     // max gagal beruntun
-                3, // max order aktif sekaligus
+                300,       // 300 target score
+                5,     // max gagal beruntun
+                2, // max order aktif sekaligus
                 recipes
             );
 
             // === KONFIGURASI STAGE HARD ===
             hardStage = new StageConfig(
                 "Stage 1 - HARD",
-                180,   // durasi 3 menit
-                400,       // target score 
-                2,     // max gagal beruntun
+                210,   // durasi 2.5 menit
+                400,       // target score
+                3,     // max gagal beruntun
                 3, // max order aktif sekaligus
                 recipes
             );

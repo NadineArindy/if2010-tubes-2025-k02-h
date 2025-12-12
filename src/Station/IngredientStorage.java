@@ -180,19 +180,38 @@ public class IngredientStorage extends Station {
             return;
         }
 
-        // CASE 5: Chef pegang item, rak kosong -> taruh item di atas rak
-        if(onTop == null){
-            itemOnTop = inHand;
-            chef.setInventory(null);
+// CASE 5: Chef pegang item, rak kosong
+        if (onTop == null) {
 
-            GameContext.getMessenger().info(
-                    inHand.getClass().getSimpleName() +
-                    " diletakkan di atas IngredientStorage."
-            );
+            // BLOK SEMUA NON-INGREDIENT
+            if (!(inHand instanceof Preparable)) {
+                GameContext.getMessenger().error(
+                        "Tidak bisa meletakkan " + inHand.getClass().getSimpleName() +
+                                " di IngredientStorage."
+                );
+                return;
+            }
+
+            // BLOK UTENSIL MESKIPUN PREPARABLE
+            if (inHand instanceof KitchenUtensils || inHand instanceof Plate) {
+                GameContext.getMessenger().error(
+                        "IngredientStorage hanya menerima ingredient mentah."
+                );
+                return;
+            }
+
+            if (!infiniteSupply) {
+                itemOnTop = inHand;
+                chef.setInventory(null);
+
+                GameContext.getMessenger().info(
+                        inHand.getClass().getSimpleName() +
+                                " diletakkan di atas IngredientStorage."
+                );
+            }
 
             return;
         }
-
         System.out.println("[IngredientStorage " + getId() + "] interact by " + chef.getName());
     }
 

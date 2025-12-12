@@ -73,21 +73,22 @@ public class CookingStation extends Workstation {
     private void startCooking(KitchenUtensils utensil){
         this.cookingUtensil = utensil;
         this.isCooking = true;
-        if (cookingSfx == null) {
-            cookingSfx = new MusicPlayer();
-            cookingSfx.playLoop("resources/assets/sfx/tick.wav");
-        }
 
-        boolean resumeSameUtensil = (utensil == lastCookingUtensil)   // objeknya sama
-                                    && remainingTime > 0              // sudah dalam proses
-                                    && !burnedStageTriggered;         // belum gosong
+        // RESET TOTAL SETIAP START COOKING
+        this.remainingTime = 0;
+        this.cookedStageTriggered = false;
+        this.burnedStageTriggered = false;
 
-        if (resumeSameUtensil) {
-            GameContext.getMessenger().info(
-                    "Cooking: melanjutkan masak di " + utensil.getName()
-            );
-            return;
+        // Play SFX
+        if (cookingSfx != null) {
+            cookingSfx.stop();
         }
+        cookingSfx = new MusicPlayer();
+        cookingSfx.playLoop("resources/assets/sfx/tick.wav");
+
+        GameContext.getMessenger().info(
+                "Cooking: mulai memasak di " + utensil.getName()
+        );
 
         this.remainingTime = 0;
         this.cookedStageTriggered = false;
@@ -148,18 +149,13 @@ public class CookingStation extends Workstation {
 
     @Override
     public float getProgress() {
-        if (!isCooking) { 
+        if (!isCooking || cookingUtensil == null) {
             return -1f;
         }
 
-        if (remainingTime <= 0 || remainingTime > COOKING_TIME) {
-            return -1f;
-        }
-
-        float done = COOKING_TIME - remainingTime;
-        return done / (float) COOKING_TIME;
+        float progress = remainingTime / (float) COOKING_TIME;
+        return Math.min(progress, 1f);
     }
-
 
     @Override
     public void interact(Chef chef) {
