@@ -62,11 +62,11 @@ class MapPanel extends JPanel {
         int yOffset = (getHeight() - rows * cellSize) / 2;
 
         // === BACKGROUND ASSETS ===
-        BufferedImage stone = AssetManager.floor; 
-        if (stone != null) {
+        BufferedImage water = AssetManager.mapBackground; 
+        if (water != null) {
             for (int y = 0; y < getHeight(); y += cellSize) {
                 for (int x = 0; x < getWidth(); x += cellSize) {
-                    g.drawImage(stone, x, y, cellSize, cellSize, null);
+                    g.drawImage(water, x, y, cellSize, cellSize, null);
                 }
             }
         } else {

@@ -11,18 +11,18 @@ import src.Item.*;
 public class AssetManager {
 
     // ==== TILE / STATION IMAGE ====
-    public static BufferedImage floor, wall;
+    public static BufferedImage floor, wall, mapBackground;
     public static BufferedImage tileA, tileC, tileR, tileS, tileT, tileP, tileX;
     public static BufferedImage I_RICE, I_NORI, I_CUCUMBER, I_FISH, I_SHRIMP;
     public static BufferedImage washingSink; // W kanan
     public static BufferedImage washingRack; // W kiri 
 
-
     // ==== CHEF ICON ====
     public static BufferedImage chef_A, chef_B;
 
     // ==== UTENSILS ====
-    public static BufferedImage iconPlate;
+    public static BufferedImage iconCleanPlate;
+    public static BufferedImage iconDirtyPlate;
     public static BufferedImage iconBoilingPot;
     public static BufferedImage iconFryingPan;
 
@@ -48,6 +48,7 @@ public class AssetManager {
             // === TILES / STATIONS ====
             floor = load("/resources/assets/tiles/lantai.png");
             wall  = load("/resources/assets/tiles/X.png");
+            mapBackground = load("/resources/assets/tiles/background.png");
             tileA = load("/resources/assets/tiles/A.png");
             tileC = load("/resources/assets/tiles/C.png");
             tileR = load("/resources/assets/tiles/R.png");
@@ -70,7 +71,8 @@ public class AssetManager {
             chef_B   = load("/resources/assets/chef/chef2.png");
 
             // === UTENSILS ===
-            iconPlate      = load("/resources/assets/utensils/plate.png");
+            iconCleanPlate = load("/resources/assets/utensils/plate.png");
+            iconDirtyPlate = load("/resources/assets/utensils/dirtyPlate.png");
             iconBoilingPot = load("/resources/assets/utensils/boiling pot.png");
             iconFryingPan  = load("/resources/assets/utensils/frying pan.png");
 
@@ -112,9 +114,14 @@ public class AssetManager {
 
         // === PLATE ===
         if (item instanceof Plate plate) {
+            // Piring kotor
+            if (!plate.isClean()) {
+                return iconDirtyPlate;  
+            }
+
             // Jika belum ada isi -> piring polos
             if (plate.getContents() == null || plate.getContents().isEmpty()) {
-                return iconPlate;
+                return iconCleanPlate;   
             }
 
             // Jika ada isi -> deteksi jenis sushi
@@ -124,7 +131,7 @@ public class AssetManager {
             }
 
             // fallback kalau kombinasi gak cocok resep
-            return iconPlate;
+            return iconCleanPlate;
         }
 
         // === UTENSILS ===
@@ -133,7 +140,7 @@ public class AssetManager {
             if (n.contains("boiling")) return iconBoilingPot;
             if (n.contains("frying")) return iconFryingPan;
             // Jika tidak dikenali, pakai icon plate sebagai fallback
-            return iconPlate; 
+            return iconCleanPlate; 
         }
 
         // === INGREDIENT ===
