@@ -54,6 +54,9 @@ public class Main {
     private static MapPanel mapPanel;
     private static Chef[] allChefs;
 
+    // ======= MUSIK =======
+    private static MusicPlayer bgm;
+
     public static void main(String[] args) {
         //frame + menuPanel
         initFrameAndMenu();
@@ -214,6 +217,13 @@ public class Main {
 
     // ======= START NEW STAGE (EASY/HARD) =======
     private static void startStage(StageConfig config) {
+        // STOP music lainnya dulu
+        if (bgm != null) bgm.stop();
+
+        // PLAY TITLE MUSIC
+        bgm = new MusicPlayer();
+        bgm.playLoop("resources/assets/music/game.wav");
+
         // matikan timer stage sebelumnya
         if (gameTimer != null) gameTimer.stop();
 
@@ -332,6 +342,13 @@ public class Main {
     // ======= SWITCH ANTAR GAME STATE =======
     // Menampilkan Main Menu
     private static void switchToMainMenu() {
+        // STOP music lainnya dulu
+        if (bgm != null) bgm.stop();
+
+        // PLAY TITLE MUSIC
+        bgm = new MusicPlayer();
+        bgm.playLoop("resources/assets/music/title.wav");
+
         gameState = GameState.MAIN_MENU;
         frame.getContentPane().removeAll();
         frame.add(menuPanel, BorderLayout.CENTER);
