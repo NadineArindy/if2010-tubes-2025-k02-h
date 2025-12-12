@@ -113,53 +113,88 @@ Chef dapat melempar ingredient mentah.
 | `src/Game/` | Core game logic | [Buka](src/Game/) |
 | `src/chef/` | Chef movement & action | [Buka](src/chef/) |
 | `src/Station/` | Kitchen station system | [Buka](src/Station/) |
-| `src/Order/` | Order & recipe system | [Buka](src/Order/) |
+| `src/Ingredients/` | Ingredients | [Buka](src/Ingredients/) |
 | `src/Item/` | Item & utensils | [Buka](src/Item/) |
+| `src/Order/` | Order & recipe system | [Buka](src/Order/) |
+| `src/Exception/` | Custom exception | [Buka](src/Exception/) |
 | `resources/assets/` | Visual & audio assets | [Buka](resources/assets/) |
+
+
 ```txt
 ├── src/
 │   ├── Game/
-│   │   ├── Main.java                # Entry point game
-│   │   ├── GameLoop.java            # Game loop & update sistem waktu
-│   │   ├── GameState.java           # State permainan
-│   │   ├── MapPanel.java            # Render map, chef, HUD
-│   │   ├── MenuPanel.java           # Render menu UI
-│   │   ├── AssetManager.java        # Loader asset gambar & audio
-│   │   ├── GameContext.java         # Context global (order, audio, messenger)
-│   │   └── ScoreManager.java        # Manajemen skor
-│   │
+│   │   ├── AssetManager.java          # Loader asset (sprite, UI, audio)
+│   │   ├── GameContext.java           # Context global (order, score, messenger)
+│   │   ├── GameController.java        # Kontrol chef aktif & input logic
+│   │   ├── GameLoop.java              # Game loop utama (timer, update station, stage)
+│   │   ├── GameMap.java               # Representasi map & tile
+│   │   ├── GameState.java             # Enum state permainan
+│   │   ├── HudUtil.java               # Helper format HUD
+│   │   ├── Main.java                  # Entry point aplikasi
+│   │   ├── MainGame.java              # Bootstrap game (jika dipakai)
+│   │   ├── MapFactory.java            # Factory pembuatan map
+│   │   ├── MapPanel.java              # Render map, chef, item, HUD
+│   │   ├── MenuPanel.java             # Render menu (Main, Help, Stage Select, Result)
+│   │   ├── MusicPlayer.java           # BGM & SFX player
+│   │   ├── ScoreManager.java          # Manajemen skor
+│   │   ├── StageConfig.java           # Konfigurasi stage
+│   │   ├── StageResult.java           # Data hasil stage
+│   │   ├── StationType.java           # Enum tipe station
+│   │   ├── Tile.java                  # Representasi tile
+│   │   └── TileType.java              # Enum tipe tile
+│   │   
 │   ├── chef/
-│   │   ├── Chef.java                # Logic chef (move, dash, interact)
-│   │   ├── Direction.java           # Enum arah gerak
-│   │   └── Position.java            # Koordinat posisi chef
-│   │
+│   │   ├── Chef.java                  # Logic chef (move, dash, interact, inventory)
+│   │   ├── Direction.java             # Enum arah (UP, DOWN, LEFT, RIGHT)
+│   │   └── Position.java              # Koordinat posisi (x, y)
+│   │   
 │   ├── Station/
-│   │   ├── Station.java             # Abstract class station
-│   │   ├── CuttingStation.java      # Station memotong ingredient
-│   │   ├── CookingStation.java      # Station memasak ingredient
-│   │   ├── WashingStation.java      # Station mencuci plate
-│   │   ├── PlateStorage.java        # Penyimpanan plate
-│   │   ├── ServingCounter.java      # Penyajian dish
-│   │   └── KitchenLoop.java         # Sistem pengembalian plate
-│   │
-│   ├── Order/
-│   │   ├── Order.java               # Representasi order aktif
-│   │   ├── OrderManager.java        # Manajemen order & validasi dish
-│   │   └── Recipe.java              # Definisi resep
-│   │
+│   │   ├── AssemblyStation.java       # Station perakitan
+│   │   ├── CookingStation.java        # Station memasak ingredient
+│   │   ├── CuttingStation.java        # Station memotong ingredient
+│   │   ├── IngredientStorage.java     # Storage bahan mentah
+│   │   ├── KitchenLoop.java           # Loop pengembalian plate
+│   │   ├── PlateStorage.java          # Penyimpanan plate
+│   │   ├── ServingCounter.java        # Penyajian dish ke order
+│   │   ├── Station.java               # Abstract base station
+│   │   ├── TrashStation.java          # Tempat buang item
+│   │   ├── WashingStation.java        # Station mencuci plate
+│   │   └── Workstation.java           # Base station kerja
+│   │   
+│   ├── Ingredients/
+│   │   ├── Chopable.java              # Interface ingredient bisa dipotong
+│   │   ├── Cookable.java              # Interface ingredient bisa dimasak
+│   │   ├── Cucumber.java              # Ingredient timun
+│   │   ├── Fish.java                  # Ingredient ikan
+│   │   ├── Ingredient.java            # Base class ingredient
+│   │   ├── IngredientState.java       # Enum state ingredient
+│   │   ├── Nori.java                  # Ingredient nori
+│   │   ├── Rice.java                  # Ingredient nasi
+│   │   └── Shrimp.java                # Ingredient udang
+│   │   
 │   ├── Item/
-│   │   ├── Item.java                # Abstract item
-│   │   ├── Dish.java                # Hidangan hasil plating
-│   │   ├── Plate.java               # Plate clean / dirty
-│   │   ├── Ingredient.java          # Base ingredient
-│   │   └── KitchenUtensils.java     # Alat dapur
-│   │
-│   └── Ingredients/
-│       ├── Rice.java
-│       ├── Nori.java
-│       ├── Fish.java
-│       ├── Shrimp.java
-│       └── Cucumber.java
+│   │   ├── BoilingPot.java             # Alat masak rebus
+│   │   ├── CookingDevice.java         # Abstract alat masak
+│   │   ├── Dish.java                  # Hidangan jadi
+│   │   ├── FryingPan.java             # Alat goreng
+│   │   ├── Item.java                  # Base item
+│   │   ├── KitchenUtensils.java       # Alat dapur
+│   │   ├── Plate.java                 # Plate (clean / dirty)
+│   │   ├── PlateDirtyException.java   # Exception plate kotor
+│   │   ├── Preparable.java            # Interface objek bisa diproses
+│   │   └── UtensilFullException.java  # Exception kapasitas alat penuh
+│   │   
+│   ├── Order/
+│   │   ├── Order.java                 # Representasi order aktif
+│   │   ├── OrderManager.java          # Manajemen order & validasi dish
+│   │   └── Recipe.java                # Definisi resep
+│   │   
+│   └──Exception/
+│       ├── IncompatibleIngredientException.java
+│       ├── InvalidDataException.java
+│       ├── InvalidIngredientStateException.java
+│       ├── OrderNotFoundException.java
+│       └── orkstationFullException.java
 │
 ├── resources/
 │   └── assets/
@@ -168,10 +203,10 @@ Chef dapat melempar ingredient mentah.
 │       ├── ingredients/             # Icon ingredient
 │       ├── dish/                    # Icon dish
 │       ├── menu/                    # Background menu
-│       └── music/                   # BGM & SFX (.wav)
+│       ├── music/                   # BGM (.wav)
+│       └── sfx/                     # SFX (.wav)
 │
-├── README.md
-└── out/                             # Hasil kompilasi
+└── README.md
 ```
 
 
