@@ -39,4 +39,12 @@ public class GameContext {
     public static OrderManager getOrderManager() { return orderManager; }
     public static void setOrderManager(OrderManager om) { orderManager = om; }
 
+    private static MusicPlayer sfxPlayer = new MusicPlayer();
+
+    public static void playSfx(String path, double volume) {
+        if (sfxPlayer != null) {
+            sfxPlayer.playOnce(path, volume);
+        }
+    }
+
 }

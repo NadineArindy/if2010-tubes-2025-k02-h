@@ -46,6 +46,9 @@ public class CuttingStation extends Workstation {
             remainingTime = CUTTING_TIME;
         }
 
+        // SFX
+        GameContext.playSfx("resources/assets/sfx/chop.wav", 1);
+
         isCutting = true;
     }
 
@@ -236,6 +239,9 @@ public class CuttingStation extends Workstation {
                 remainingTime = CUTTING_TIME;
                 isCutting = true;
 
+                // === SFX: mulai memotong ===
+                GameContext.playSfx("resources/assets/sfx/chop.wav", 1);
+
                 startCuttingAsync(chef);
 
                 return;
@@ -256,6 +262,10 @@ public class CuttingStation extends Workstation {
 
         //CASE 6: Chef tangan kosong, ada ingredient tapi proses sedang pause
         if (inHand == null && currentIngredient != null && !isCutting && remainingTime > 0) {
+
+            // === SFX: lanjut motong ===
+            GameContext.playSfx("resources/assets/sfx/chop.wav", 1);
+
             startCuttingAsync(chef);
             
             return;

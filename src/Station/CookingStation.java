@@ -2,6 +2,7 @@ package src.Station;
 
 import src.Game.GameContext;
 import src.Game.HudUtil;
+import src.Game.MusicPlayer;
 import src.Game.StationType;
 import src.Ingredients.Cookable;
 import src.Ingredients.IngredientState;
@@ -21,6 +22,8 @@ public class CookingStation extends Workstation {
     private KitchenUtensils lastCookingUtensil;
     public static final int COOKING_TIME = 12_000;
     public static final int BURNING_TIME = 24_000;
+
+    private MusicPlayer cookingSfx;
 
     public CookingStation(String id, Position position, char symbol, StationType type, int capacity, int processTime) {
         super(id, position, symbol, type, capacity, processTime);
@@ -70,6 +73,10 @@ public class CookingStation extends Workstation {
     private void startCooking(KitchenUtensils utensil){
         this.cookingUtensil = utensil;
         this.isCooking = true;
+        if (cookingSfx == null) {
+            cookingSfx = new MusicPlayer();
+            cookingSfx.playLoop("resources/assets/sfx/tick.wav");
+        }
 
         boolean resumeSameUtensil = (utensil == lastCookingUtensil)   // objeknya sama
                                     && remainingTime > 0              // sudah dalam proses
@@ -120,11 +127,15 @@ public class CookingStation extends Workstation {
         if(!cookedStageTriggered && remainingTime >= COOKING_TIME){
             advanceCookables(cookingUtensil);
             cookedStageTriggered = true;
+            GameContext.playSfx("resources/assets/sfx/bell.wav", 1);
+            if (cookingSfx != null) cookingSfx.stop();
         }
 
         if(!burnedStageTriggered && remainingTime >= BURNING_TIME){
             advanceCookables(cookingUtensil);
             burnedStageTriggered = true;
+            GameContext.playSfx("resources/assets/sfx/burned.wav", 1);
+            if (cookingSfx != null) cookingSfx.stop();
         }
     }
 

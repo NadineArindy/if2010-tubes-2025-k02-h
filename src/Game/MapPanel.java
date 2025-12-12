@@ -11,6 +11,7 @@ import src.Station.IngredientStorage;
 import src.Station.Station;
 import src.Station.WashingStation;
 import src.chef.Chef;
+import src.chef.Direction;
 import src.chef.Position;
 
 
@@ -20,7 +21,8 @@ class MapPanel extends JPanel {
     private Chef activeChef;
     private final ScoreManager scoreManager;
     private final OrderManager orderManager;
-    private GameLoop gameLoop; 
+    private GameLoop gameLoop;
+
 
 
     public MapPanel(GameMap map, Chef[] chefs, Chef activeChef, ScoreManager scoreManager, OrderManager orderManager) {
@@ -45,6 +47,8 @@ class MapPanel extends JPanel {
     public void setGameLoop(GameLoop gameLoop) {
         this.gameLoop = gameLoop;
     }
+
+
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -270,19 +274,45 @@ class MapPanel extends JPanel {
                     int cy = yOffset + pos.getY() * cellSize;
 
                     // pilih sprite berdasarkan index (C1 = A, C2 = B)
-                    BufferedImage sprite = (i == 0)
-                            ? AssetManager.chef_A
-                            : AssetManager.chef_B;
+                    BufferedImage sprite;
+                    Direction dir = c.getDirection();
+                    boolean isChefA = (i == 0);
+
+                    if (isChefA) {
+                        if (dir == Direction.LEFT) {
+                            sprite = AssetManager.chefA_left;
+                        } else if (dir == Direction.RIGHT) {
+                            sprite = AssetManager.chefA_right;
+                        } else {
+                            sprite = AssetManager.chef_A; // UP / DOWN
+                        }
+                    } else {
+                        if (dir == Direction.LEFT) {
+                            sprite = AssetManager.chefB_left;
+                        } else if (dir == Direction.RIGHT) {
+                            sprite = AssetManager.chefB_right;
+                        } else {
+                            sprite = AssetManager.chef_B; // UP / DOWN
+                        }
+                    }
 
                     // Gambar sprite chef
                     if (sprite != null) {
-                        g.drawImage(
-                                sprite,
-                                cx, cy,
-                                cellSize, cellSize,
-                                null
-                        );
-                    } else {
+                        int sw = sprite.getWidth();
+                        int sh = sprite.getHeight();
+
+                        float scale = (float) cellSize / sh; // tinggi dipatok
+
+                        int dh = cellSize;
+                        int dw = Math.round(sw * scale);
+
+                        int dx = cx + (cellSize - dw) / 2;
+                        int dy = cy; // karena tinggi sudah pas, bisa langsung
+
+                        g.drawImage(sprite, dx, dy, dw, dh, null);
+                    }
+
+                    else {
                         // fallback 
                         g.setColor(c == activeChef ? java.awt.Color.BLUE : java.awt.Color.GREEN);
                         g.fillOval(
@@ -293,14 +323,23 @@ class MapPanel extends JPanel {
                         );
                     }
 
-                    // Gambar icon item yang sedang dipegang di atas kepala chef
+                    // Gambar icon item yang sedang dipegang chef
                     Item held = c.getInventory();
-                    BufferedImage itemIcon = AssetManager.getItemIcon(held); 
+                    BufferedImage itemIcon = AssetManager.getItemIcon(held);
 
                     if (itemIcon != null) {
-                        int iconSize = cellSize / 2; // item lebih kecil dari chef
+                        int iconSize = cellSize / 2;
+                        int offset = cellSize / 3;
+
                         int ix = cx + (cellSize - iconSize) / 2;
-                        int iy = cy - iconSize / 2; // item di atas kepala chef
+                        int iy = cy + (cellSize - iconSize) / 2;
+
+                        switch (c.getDirection()) {
+                            case UP -> iy -= offset;
+                            case DOWN -> iy += offset;
+                            case LEFT -> ix -= offset;
+                            case RIGHT -> ix += offset;
+                        }
 
                         g.drawImage(itemIcon, ix, iy, iconSize, iconSize, null);
                     }
@@ -371,6 +410,60 @@ class MapPanel extends JPanel {
         for (String s : lines) {
             g.drawString(s, textX, textY);
             textY += lineHeight;
+        }
+
+        // ===== DASH COOLDOWN HUD (TOP LEFT) =====
+        if (activeChef != null) {
+            Graphics2D g2 = (Graphics2D) g;
+
+            float progress = activeChef.getDashCooldownProgress();
+
+            // === POSISI KIRI ATAS ===
+            int dashX = 20;
+            int dashY = 20;
+
+            int dashW = 200;
+            int dashH = 50;
+
+            // === BACKGROUND CARD ===
+            g2.setColor(new Color(50, 50, 50));
+            g2.fillRoundRect(dashX, dashY, dashW, dashH, 12, 12);
+
+            g2.setColor(new Color(250, 240, 200));
+            g2.fillRoundRect(dashX + 2, dashY + 2, dashW - 4, dashH - 4, 10, 10);
+
+            // === LABEL ===
+            g2.setFont(g.getFont().deriveFont(Font.BOLD, 14f));
+            g2.setColor(Color.BLACK);
+            g2.drawString("DASH", dashX + 12, dashY + 18);
+
+            // === BAR ===
+            int barX = dashX + 12;
+            int barY = dashY + 26;
+            int barW = dashW - 24;
+            int barH = 12;
+
+            // bar bg
+            g2.setColor(new Color(180, 180, 180));
+            g2.fillRect(barX, barY, barW, barH);
+
+            // bar fill
+            int filled = (int) (barW * progress);
+            g2.setColor(progress >= 1f
+                    ? new Color(76, 175, 80)   // hijau = ready
+                    : new Color(255, 193, 7)); // kuning = cooldown
+            g2.fillRect(barX, barY, filled, barH);
+
+            // bar border
+            g2.setColor(Color.DARK_GRAY);
+            g2.drawRect(barX, barY, barW, barH);
+
+            // === COUNTDOWN TEXT ===
+            if (progress < 1f) {
+                long sec = (activeChef.getDashRemainingMs() + 999) / 1000;
+                g2.setFont(g.getFont().deriveFont(Font.PLAIN, 12f));
+                g2.drawString(sec + "s", barX + barW - 22, barY - 2);
+            }
         }
     }
 

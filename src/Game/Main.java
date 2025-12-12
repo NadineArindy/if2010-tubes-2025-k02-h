@@ -56,6 +56,14 @@ public class Main {
 
     // ======= MUSIK =======
     private static MusicPlayer bgm;
+    private static MusicPlayer sfx;
+    private static boolean homeMusicPlaying = false;
+    private enum StageSelectSource {
+        FROM_MAIN_MENU,
+        FROM_POST_STAGE
+    }
+    private static StageSelectSource stageSelectSource;
+
 
     public static void main(String[] args) {
         //frame + menuPanel
@@ -223,6 +231,7 @@ public class Main {
         // PLAY TITLE MUSIC
         bgm = new MusicPlayer();
         bgm.playLoop("resources/assets/music/game.wav");
+        homeMusicPlaying = false;
 
         // matikan timer stage sebelumnya
         if (gameTimer != null) gameTimer.stop();
@@ -342,12 +351,12 @@ public class Main {
     // ======= SWITCH ANTAR GAME STATE =======
     // Menampilkan Main Menu
     private static void switchToMainMenu() {
-        // STOP music lainnya dulu
-        if (bgm != null) bgm.stop();
-
-        // PLAY TITLE MUSIC
-        bgm = new MusicPlayer();
-        bgm.playLoop("resources/assets/music/title.wav");
+        if (!homeMusicPlaying) {
+            if (bgm != null) bgm.stop();
+            bgm = new MusicPlayer();
+            bgm.playLoop("resources/assets/music/home.wav");
+            homeMusicPlaying = true;
+        }
 
         gameState = GameState.MAIN_MENU;
         frame.getContentPane().removeAll();
@@ -374,6 +383,11 @@ public class Main {
 
     // Menampilkan Stage Select
     private static void switchToStageSelect(){
+        if (stageSelectSource == StageSelectSource.FROM_POST_STAGE) {
+            if (bgm != null) bgm.stop();
+            bgm = new MusicPlayer();
+            bgm.playLoop("resources/assets/music/home.wav");
+        }
         gameState = GameState.STAGE_SELECT;
         frame.getContentPane().removeAll();
         frame.add(menuPanel, BorderLayout.CENTER);
@@ -387,6 +401,16 @@ public class Main {
 
     // Menampilkan Result Screen
     private static void switchToPostStage(String resultText) {
+        if (bgm != null) bgm.stop();
+
+        MusicPlayer sfx = new MusicPlayer();
+
+        if (resultText.equalsIgnoreCase("PASS")) {
+            sfx.playOnce("resources/assets/music/win.wav",1);
+        } else {
+            sfx.playOnce("resources/assets/music/failed.wav", 1);
+        }
+
         gameState = GameState.POST_STAGE;
         frame.getContentPane().removeAll();
         frame.add(menuPanel, BorderLayout.CENTER);
@@ -422,7 +446,10 @@ public class Main {
     */ 
     private static void handleMainMenuKey(KeyEvent e) {
         switch (e.getKeyCode()) {
-            case KeyEvent.VK_X -> switchToStageSelect();
+            case KeyEvent.VK_X -> {
+                stageSelectSource = StageSelectSource.FROM_MAIN_MENU;
+                switchToStageSelect();
+            }
             case KeyEvent.VK_H -> switchToHelp();
             case KeyEvent.VK_Q -> System.exit(0);
         }
@@ -464,11 +491,49 @@ public class Main {
                 controller.switchChef();
                 mapPanel.setActiveChef(controller.getActiveChef());
             }
-            case KeyEvent.VK_W -> active.move(Direction.UP, map, others);
-            case KeyEvent.VK_S -> active.move(Direction.DOWN, map, others);
-            case KeyEvent.VK_A -> active.move(Direction.LEFT, map, others);
-            case KeyEvent.VK_D -> active.move(Direction.RIGHT, map, others);
-            case KeyEvent.VK_E -> active.interact(map);
+
+            case KeyEvent.VK_W -> {
+                if (e.isShiftDown()) {
+                    active.setDirection(Direction.UP);
+                    active.dash(map, others);
+                } else {
+                    active.move(Direction.UP, map, others);
+                }
+            }
+
+            case KeyEvent.VK_S -> {
+                if (e.isShiftDown()) {
+                    active.setDirection(Direction.DOWN);
+                    active.dash(map, others);
+                } else {
+                    active.move(Direction.DOWN, map, others);
+                }
+            }
+
+            case KeyEvent.VK_A -> {
+                if (e.isShiftDown()) {
+                    active.setDirection(Direction.LEFT);
+                    active.dash(map, others);
+                } else {
+                    active.move(Direction.LEFT, map, others);
+                }
+            }
+
+            case KeyEvent.VK_D -> {
+                if (e.isShiftDown()) {
+                    active.setDirection(Direction.RIGHT);
+                    active.dash(map, others);
+                } else {
+                    active.move(Direction.RIGHT, map, others);
+                }
+            }
+            case KeyEvent.VK_E -> {
+                if (e.isShiftDown()) {
+                    active.throwItem(map, others);
+                } else {
+                    active.interact(map);
+                }
+            }
         }
 
         mapPanel.repaint();
@@ -485,7 +550,10 @@ public class Main {
                     startStage(lastStageConfig);
                 }
             }
-            case KeyEvent.VK_N -> switchToStageSelect();
+            case KeyEvent.VK_N -> {
+                stageSelectSource = StageSelectSource.FROM_POST_STAGE;
+                switchToStageSelect();
+            }
         }
     }
 

@@ -19,6 +19,8 @@ public class AssetManager {
 
     // ==== CHEF ICON ====
     public static BufferedImage chef_A, chef_B;
+    public static BufferedImage chefA_left, chefB_left;
+    public static BufferedImage chefA_right, chefB_right;
 
     // ==== UTENSILS ====
     public static BufferedImage iconCleanPlate;
@@ -80,7 +82,11 @@ public class AssetManager {
 
             // === CHEF ===
             chef_A   = load("/resources/assets/chef/chef1.png");
+            chefA_left = load("/resources/assets/chef/chef1_left.png");
+            chefA_right = load("/resources/assets/chef/chef1_right.png");
             chef_B   = load("/resources/assets/chef/chef2.png");
+            chefB_left = load("/resources/assets/chef/chef2_left.png");
+            chefB_right = load("/resources/assets/chef/chef2_right.png");
 
             // === UTENSILS ===
             iconCleanPlate = load("/resources/assets/utensils/plate.png");

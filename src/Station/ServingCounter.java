@@ -73,7 +73,7 @@ public class ServingCounter extends Station {
         Dish dish;
 
         try{
-            dish = builDishFromPlate(plate);
+            dish = buildDishFromPlate(plate);
         } catch (InvalidDataException e){
             GameContext.getMessenger().error("Serve gagal: " + e.getMessage());
 
@@ -90,7 +90,7 @@ public class ServingCounter extends Station {
             GameContext.getMessenger().info(
                 "Order berhasil! +" + reward + " skor. Total: " + scoreManager.getScore()
             );
-            orderManager.spawnRandomOrder();
+//            orderManager.spawnRandomOrder();
         } catch (OrderNotFoundException | InvalidDataException e) {
             // pinalti jika dish tidak sesuai dengan order yang ada
             int penalty = 20;
@@ -107,7 +107,7 @@ public class ServingCounter extends Station {
     }
 
     // Mengubah isi dari plate menjadi sebuah dish
-    public Dish builDishFromPlate(Plate plate) throws InvalidDataException{
+    public Dish buildDishFromPlate(Plate plate) throws InvalidDataException{
         Set<Preparable> contents = plate.getContents();
         if(contents == null || contents.isEmpty()){
             throw new InvalidDataException("Plate is empty, cannot build dish");
