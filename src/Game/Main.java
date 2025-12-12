@@ -27,29 +27,90 @@ import src.chef.Position;
 import src.chef.Direction;
 
 public class Main {
+
+    // ======= GLOBAL UI & STATE =======
+    private static JFrame frame;
+    private static MenuPanel menuPanel;
+    private static GameState gameState;
+    private static JLabel statusLabel;
+
+    // ======= KONFIGURAASI STAGE =======
+    private static StageConfig easyStage;
+    private static StageConfig hardStage;
+    private static StageConfig stageConfig;
+    private static StageConfig lastStageConfig;
+
+    // ======= PROGRESS STAGE =======
+    static boolean easyCleared  = false;
+    static boolean hardCleared  = false;
+
+    // ======= OBJEK GAMEPLAY =======
+    private static GameMap map;
+    private static GameLoop gameLoop;
+    private static Timer gameTimer;
+    private static ScoreManager scoreManager;
+    private static OrderManager orderManager;
+    private static GameController controller;
+    private static MapPanel mapPanel;
+    private static Chef[] allChefs;
+
     public static void main(String[] args) {
-        // ===================== SETUP MAP & CHEF =====================
+        //frame + menuPanel
+        initFrameAndMenu();
 
-        //Buat map game
-        GameMap map = MapFactory.createSampleMap();
+        //recipe + stageConfig (easy & hard)
+        setupStagesAndRecipes();   
 
-        //Spawn dua chef
-        Position spawn = map.getSpawnPoint();
-        Chef chefA = new Chef("C1", "Chef Nadine", new Position(spawn.getX() + 1, spawn.getY()));
-        Chef chefB = new Chef("C2", "Chef Riko", new Position(spawn.getX() - 5, spawn.getY()));
+        //input handler
+        installGlobalKeyHandler();
 
-        //Game controller untuk switch chef
-        GameController controller = new GameController(chefA, chefB);
-        Chef[] allChefs = new Chef[]{chefA, chefB};
+        //main menu
+        switchToMainMenu();
+    }
 
-        // ===================== SCORE, ORDER, STAGE =====================
-        
-        ScoreManager scoreManager = new ScoreManager();
-        OrderManager orderManager = new OrderManager();
+    // ======= JFRAME + MENU PANEL + STATUS LABEL =======
+    private static void initFrameAndMenu() {
+        frame = new JFrame("Nimonscooked");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(new BorderLayout());
+
+        // panel untuk tampilan menu (main, help, stage select, post-stage)
+        menuPanel = new MenuPanel();
+        frame.add(menuPanel, BorderLayout.CENTER);
+
+        // status bar di bawah saat state IN GAME
+        statusLabel = new JLabel("Ready");
+        frame.add(statusLabel, BorderLayout.SOUTH);
+
+        // Messenger global (game context)
+        GameContext.setMessenger(new GameContext.GameMessenger() {
+            @Override
+            public void info(String msg) {
+                statusLabel.setForeground(Color.BLACK);
+                statusLabel.setText(msg);
+                System.out.println(msg);
+            }
+
+            @Override
+            public void error(String msg) {
+                statusLabel.setForeground(Color.RED);
+                statusLabel.setText("!!! " + msg);
+                System.err.println(msg);
+            }
+        });
+
+        frame.setSize(800, 600);
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+    }
+
+    // ===================== SCORE, ORDER, STAGE =====================
+    private static void setupStagesAndRecipes() {
+        scoreManager = new ScoreManager();
+        orderManager = new OrderManager();
         // Simpan di GameContext supaya class lain bisa akses
         GameContext.setOrderManager(orderManager); 
-        
-        StageConfig stage1 = null;
+
         try {
             // ====== DAFTAR RESEP ======
             // Nasi (COOKED)
@@ -111,60 +172,74 @@ public class Main {
 
             orderManager.setAvailableRecipes(recipes);
 
-            // === KONFIGURASI STAGE 1 ===
-            stage1 = new StageConfig(
-                "Stage 1 - Sushi Bar",
-                180,   // durasi 3 menit
+            // === KONFIGURASI STAGE EASY ===
+            easyStage = new StageConfig(
+                "Stage 1 - EASY",
+                240,   // durasi 4 menit
                 300,       // target score 
-                5,     // max gagal beruntun
+                3,     // max gagal beruntun
                 3, // max order aktif sekaligus
                 recipes
             );
 
-            // Spawn beberapa order awal
-            orderManager.spawnRandomOrder();
+            // === KONFIGURASI STAGE HARD ===
+            hardStage = new StageConfig(
+                "Stage 1 - HARD",
+                180,   // durasi 3 menit
+                400,       // target score 
+                2,     // max gagal beruntun
+                3, // max order aktif sekaligus
+                recipes
+            );
+
+            // default stage awal 
+            stageConfig = easyStage;
 
         } catch (Exception ex) {
             ex.printStackTrace();
+            // fallback 
+            easyStage = new StageConfig(
+                "Fallback Stage",
+                180,
+                0,
+                999,
+                3,
+                orderManager.getAvailableRecipes()
+            );
+            hardStage = easyStage;
+            stageConfig = easyStage;
         }
 
-        // ===================== SETUP WINDOW & PANEL =====================
+    }
 
-        // Window Utama
-        JFrame frame = new JFrame("Nimonscooked");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new BorderLayout());
+    // ======= START NEW STAGE (EASY/HARD) =======
+    private static void startStage(StageConfig config) {
+        // matikan timer stage sebelumnya
+        if (gameTimer != null) gameTimer.stop();
 
-        // Panel untuk menggambar map + chef + HUD
-        MapPanel panel = new MapPanel(map, allChefs, controller.getActiveChef(), scoreManager, orderManager);
-        frame.add(panel, BorderLayout.CENTER);
+        // menyimpan stage yang sedang di mainkan 
+        stageConfig = config;
+        // untuk retry
+        lastStageConfig = config;
 
-        // Label status di bagian bawah (buat pesan info/error singkat)
-        JLabel statusLabel = new JLabel("Ready");
-        frame.add(statusLabel, BorderLayout.SOUTH);
+        // reset stage
+        orderManager.resetStageStats();
+        orderManager.clearAllOrders();
 
-        // ===================== GAME CONTEXT (MESSENGER) =====================
 
-        GameContext.setMessenger(new GameContext.GameMessenger() {
-            @Override
-            public void info(String msg) {
-                statusLabel.setForeground(Color.BLACK);
-                statusLabel.setText(msg);
-                System.out.println(msg);
-            }
+        // === SETUP MAP & CHEF ===
+        map = MapFactory.createSampleMap();
 
-            @Override
-            public void error(String msg) {
-                statusLabel.setForeground(Color.RED);
-                statusLabel.setText("!!! " + msg);
-                System.err.println(msg);
-            }
-        });
+        Position spawn = map.getSpawnPoint();
+        Chef chefA = new Chef("C1", "Chef Nadine", new Position(spawn.getX() + 1, spawn.getY()));
+        Chef chefB = new Chef("C2", "Chef Riko", new Position(spawn.getX() - 5, spawn.getY()));
 
-        // Atur ukuran dan tampilkan frame
-        frame.setSize(800, 600);
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
+        controller = new GameController(chefA, chefB);
+        allChefs = new Chef[]{chefA, chefB};
+
+        // MapPanel baru
+        mapPanel = new MapPanel(map, allChefs, controller.getActiveChef(),
+                                scoreManager, orderManager);
 
         // ===================== PLATE STORAGE, SERVING COUNTER, KITCHEN LOOP =====================
         
@@ -202,8 +277,8 @@ public class Main {
         }
         
         // Jika tadi terjadi error saat buat stage, siapkan stage cadangan (fallback)
-        if (stage1 == null) {
-            stage1 = new StageConfig(
+        if (stageConfig == null) {
+            stageConfig = new StageConfig(
                 "Fallback Stage",
                 180,
                 0,
@@ -213,91 +288,188 @@ public class Main {
             );
         }
 
-        // ===================== GAME LOOP =====================
+        // GameLoop baru
+        gameLoop = new GameLoop(map, kitchenLoop, orderManager, scoreManager, stageConfig);
+        mapPanel.setGameLoop(gameLoop);
 
-        GameLoop gameLoop = new GameLoop(map, kitchenLoop, orderManager, scoreManager, stage1);
-        panel.setGameLoop(gameLoop);
+        // Spawn order awal tiap mulai stage
+        orderManager.spawnRandomOrder();
 
-        // ===================== INPUT HANDLER =====================
+        // Ganti panel ke MapPanel (gamestate: IN_GAME)
+        gameState = GameState.IN_GAME;
+        frame.getContentPane().removeAll();
+        frame.add(mapPanel, BorderLayout.CENTER);
+        frame.add(statusLabel, BorderLayout.SOUTH);
+        frame.revalidate();
+        frame.repaint();
 
-        frame.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                Chef active = controller.getActiveChef();
-                Chef[] others = new Chef[]{controller.getInactiveChef()};
+        // Timer
+        final int TICK_MS = 100;
+        gameTimer = new Timer(TICK_MS, e -> {
+            gameLoop.update(TICK_MS);
+            mapPanel.repaint();
 
-                switch (e.getKeyCode()) {
-                    case KeyEvent.VK_B: // Switch chef  
-                        controller.switchChef();
-                        panel.setActiveChef(controller.getActiveChef());
-                        break;
-                    case KeyEvent.VK_W: // move up
-                        active.move(Direction.UP, map, others);
-                        break;
-                    case KeyEvent.VK_S: // move down
-                        active.move(Direction.DOWN, map, others);
-                        break;
-                    case KeyEvent.VK_A: // move left
-                        active.move(Direction.LEFT, map, others);
-                        break;
-                    case KeyEvent.VK_D: // move right
-                        active.move(Direction.RIGHT, map, others);
-                        break;
-                    case KeyEvent.VK_E: // interact
-                        active.interact(map);
-                        break;
-                }
-
-                panel.repaint();
-            }
-        });
-
-        // ===================== GAME TIMER (TICK) =====================
-
-        final int TICK_MS = 100; // 0.1 detik per tick
-
-        // Timer Swing yang memanggil gameLoop.update()
-        Timer gameTimer = new Timer(TICK_MS, e -> {
-            gameLoop.update(TICK_MS);   // update game loop
-            panel.repaint();
-
-            // Cek apakah stage sudah berakhir
             if (gameLoop.isStageOver()) {
                 ((Timer) e.getSource()).stop();
 
-                String title;
-                String message;
-
+                String resultText;
                 if (gameLoop.isStagePass()) {
-                        // === STAGE PASS ===
-                        title = "Stage Clear!";
-                        message = "Stage Clear!\n"
-                                + "Score: " + scoreManager.getScore() + "\n"
-                                + "Nice job, Chef!";
+                    resultText = "PASS";
+                    if (config == easyStage) easyCleared = true;
+                    if (config == hardStage) hardCleared = true;
                 } else if (gameLoop.isFailedByTooManyOrders()) {
-                        // === FAIL: TOO MANY FAILED ORDERS ===
-                        title = "Stage Failed";
-                        message = "Stage Failed - Too many failed orders!\n"
-                                + "Score: " + scoreManager.getScore() + "\n"
-                                + "Be more careful with the orders!";
+                    resultText = "Too Many Failed Orders";
                 } else {
-                        // === FAIL: TIME'S UP ===
-                        title = "Stage Failed";
-                        message = "Time's up!\n"
-                                + "Score: " + scoreManager.getScore() + "\n"
-                                + "You didn't reach the target score.";
+                    resultText = "Time's Up";
                 }
 
-                JOptionPane.showMessageDialog(
-                        frame,
-                        message,
-                        title,
-                        JOptionPane.INFORMATION_MESSAGE
-                );
+                switchToPostStage(resultText);
             }
         });
         gameTimer.start();
+    }
 
+    // ======= SWITCH ANTAR GAME STATE =======
+    // Menampilkan Main Menu
+    private static void switchToMainMenu() {
+        gameState = GameState.MAIN_MENU;
+        frame.getContentPane().removeAll();
+        frame.add(menuPanel, BorderLayout.CENTER);
+
+        menuPanel.setStageProgress(easyCleared, hardCleared);
+        menuPanel.setState(GameState.MAIN_MENU);
+
+        frame.revalidate();
+        frame.repaint();   
+    }
+
+    // Menampilkan Halaman Help
+    private static void switchToHelp()      {
+        gameState = GameState.HELP;
+        frame.getContentPane().removeAll();
+        frame.add(menuPanel, BorderLayout.CENTER);
+
+        menuPanel.setState(GameState.HELP);
+
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    // Menampilkan Stage Select
+    private static void switchToStageSelect(){
+        gameState = GameState.STAGE_SELECT;
+        frame.getContentPane().removeAll();
+        frame.add(menuPanel, BorderLayout.CENTER);
+
+        menuPanel.setStageProgress(easyCleared, hardCleared);
+        menuPanel.setState(GameState.STAGE_SELECT);
+
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    // Menampilkan Result Screen
+    private static void switchToPostStage(String resultText) {
+        gameState = GameState.POST_STAGE;
+        frame.getContentPane().removeAll();
+        frame.add(menuPanel, BorderLayout.CENTER);
+
+        menuPanel.setStageProgress(easyCleared, hardCleared);
+        menuPanel.setLastResult(resultText, scoreManager.getScore(), orderManager.getSuccessCount(), orderManager.getFailedCount());
+        menuPanel.setState(GameState.POST_STAGE);
+
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    // ======= INPUT HANDLER GLOBAL =======
+    private static void installGlobalKeyHandler() {
+        frame.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                switch (gameState) {
+                    case MAIN_MENU   -> handleMainMenuKey(e);
+                    case HELP        -> handleHelpKey(e);
+                    case STAGE_SELECT-> handleStageSelectKey(e);
+                    case IN_GAME     -> handleInGameKey(e);  
+                    case POST_STAGE  -> handlePostStageKey(e);
+                }
+            }
+        });
+    }
+
+    /* MAIN MENU: 
+    * - X = Start -> Stage Select
+    * - H = Help
+    * - Q = Exit
+    */ 
+    private static void handleMainMenuKey(KeyEvent e) {
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_X -> switchToStageSelect();
+            case KeyEvent.VK_H -> switchToHelp();
+            case KeyEvent.VK_Q -> System.exit(0);
+        }
+    }
+
+    /* HELP:
+    * - ESC = back to main menu
+     */
+    private static void handleHelpKey(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+            switchToMainMenu();
+        }
+    }
+
+    /* STAGE SELECT:
+    * - 1 = easyStage
+    * - 2 = hardStage
+    * - ESC = back to main menu
+    */
+    private static void handleStageSelectKey(KeyEvent e) {
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_1 -> startStage(easyStage);
+            case KeyEvent.VK_2 -> startStage(hardStage);
+            case KeyEvent.VK_ESCAPE -> switchToMainMenu();
+        }
+    }
+
+    /* IN GAME:
+    * - W/A/S/D = easyStage
+    * - E = interact
+    * - B = switch chef
+    */
+    private static void handleInGameKey(KeyEvent e) {
+        Chef active = controller.getActiveChef();
+        Chef[] others = new Chef[]{controller.getInactiveChef()};
+
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_B -> {
+                controller.switchChef();
+                mapPanel.setActiveChef(controller.getActiveChef());
+            }
+            case KeyEvent.VK_W -> active.move(Direction.UP, map, others);
+            case KeyEvent.VK_S -> active.move(Direction.DOWN, map, others);
+            case KeyEvent.VK_A -> active.move(Direction.LEFT, map, others);
+            case KeyEvent.VK_D -> active.move(Direction.RIGHT, map, others);
+            case KeyEvent.VK_E -> active.interact(map);
+        }
+
+        mapPanel.repaint();
+    }
+
+    /* POST STAGE:
+    * - R = retry stage terakhir
+    * - N = back to select stage
+    */
+    private static void handlePostStageKey(KeyEvent e) {
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_R -> {
+                if (lastStageConfig != null) {
+                    startStage(lastStageConfig);
+                }
+            }
+            case KeyEvent.VK_N -> switchToStageSelect();
+        }
     }
 
     /** 
@@ -305,15 +477,16 @@ public class Main {
      * Digunakan untuk menduplikasi ingredient pada resep.
      */
     private static Ingredient copyOf(Ingredient src) {
-    try {
-        Ingredient copy = src.getClass()
-                .getDeclaredConstructor(String.class)
-                .newInstance(src.getName());
-        copy.setState(src.getState());
-        return copy;
-    } catch (Exception e) {
-        throw new RuntimeException("Failed to copy ingredient " + src.getName(), e);
+        try {
+            Ingredient copy = src.getClass()
+                    .getDeclaredConstructor(String.class)
+                    .newInstance(src.getName());
+            copy.setState(src.getState());
+            return copy;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to copy ingredient " + src.getName(), e);
+        }
     }
-}
 
 }
+

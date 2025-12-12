@@ -111,6 +111,13 @@ public class GameLoop {
         }
 
         if (orderManager != null) {
+
+            // max order aktif diambil dari StageConfig
+            int maxConcurrent = (stageConfig != null) ? stageConfig.maxConcurrentOrders : Integer.MAX_VALUE;
+
+            // spawn tiap 45 detik
+            orderManager.update(deltaTime, maxConcurrent);
+
             // Hapus order yang sudah kadaluarsa dan ambil total penalty
             int totalPenalty = orderManager.purgeExpired();
             if (totalPenalty > 0 && scoreManager != null) {
@@ -152,7 +159,7 @@ public class GameLoop {
     public boolean isFailedByTooManyOrders() {
         return stageOver && !stagePass && failedByTooManyOrders;
     }
-    
+
     // === HUD helper ===
     public String getStageName() {
         return (stageConfig != null) ? stageConfig.getName() : "";

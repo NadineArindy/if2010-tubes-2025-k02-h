@@ -43,6 +43,18 @@ public class AssetManager {
     public static BufferedImage iconEbiMaki;
     public static BufferedImage iconFishCucumberRoll;
 
+    // ==== UI / MENUS ====
+    public static BufferedImage menuMain;
+    public static BufferedImage menuHelp;
+    public static BufferedImage menuStage_00;   // NO CLEAR STAGE
+    public static BufferedImage menuStage_10;   // STAGE 1 CLEAR
+    public static BufferedImage menuStage_01;   // STAGE 2 CLEAR
+    public static BufferedImage menuStage_11;   // ALL STAGES CLEAR
+    public static BufferedImage menuResultPass;
+    public static BufferedImage menuResultTimeUp;
+    public static BufferedImage menuResultTooMany;
+
+
     static {
         try {
             // === TILES / STATIONS ====
@@ -92,6 +104,17 @@ public class AssetManager {
             iconSakanaMaki       = load("/resources/assets/dish/sakana maki.png");
             iconEbiMaki          = load("/resources/assets/dish/ebi maki.png");
             iconFishCucumberRoll = load("/resources/assets/dish/fish cucumber roll.png");
+
+            // === UI / MENU ===
+            menuMain          = load("/resources/assets/menu/home.png");
+            menuHelp          = load("/resources/assets/menu/help.png");
+            menuStage_00      = load("/resources/assets/menu/no_clear.png");
+            menuStage_10      = load("/resources/assets/menu/1_clear.png");
+            menuStage_01      = load("/resources/assets/menu/2_clear.png");
+            menuStage_11      = load("/resources/assets/menu/all_clear.png");
+            menuResultPass    = load("/resources/assets/menu/pass.png");
+            menuResultTimeUp  = load("/resources/assets/menu/times_up.png");
+            menuResultTooMany = load("/resources/assets/menu/failed_streak.png");
 
         } catch (IOException e) {
             e.printStackTrace();

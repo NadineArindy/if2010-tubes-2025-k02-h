@@ -315,38 +315,63 @@ class MapPanel extends JPanel {
 
     // Menggambar HUD sederhana di pojok kanan atas
     private void drawHUD(Graphics g) {
-        g.setColor(Color.BLACK);
         g.setFont(g.getFont().deriveFont(Font.BOLD, 14f));
 
         // sejajar dengan panel ORDERS
         int cardWidth = 230;   
-        int hudX = getWidth() - cardWidth - 15;
-        int hudY = 20;
+        int cardX = getWidth() - cardWidth - 15;
+        int y = 20;
+
+        // === Kumpulkan teks untuk HUD ===
+        java.util.List<String> lines = new java.util.ArrayList<>();
 
         // === Stage info ===
         if (gameLoop != null) {
             String stageName = gameLoop.getStageName();
             int timeLeft = gameLoop.getRemainingStageSeconds();
 
-            g.drawString("Stage: " + stageName, hudX, hudY);
-            hudY += 16;
-
             // format waktu mm:ss 
             int mm = timeLeft / 60;
             int ss = timeLeft % 60;
-            String timeStr = String.format("Time: %02d:%02d", mm, ss);
-            g.drawString(timeStr, hudX, hudY);
-            hudY += 16;
+
+            lines.add("Stage: " + stageName);
+            lines.add(String.format("Time: %02d:%02d", mm, ss));
         }
 
-        // Score
-        g.drawString("Score: " + scoreManager.getScore(), hudX, hudY);
-        hudY += 16;
+        lines.add("Score: " + scoreManager.getScore());
+        lines.add("Active Orders: " + orderManager.getActiveOrders().size());
 
-        // Jumlah order aktif
-        g.drawString("Active Orders: " + orderManager.getActiveOrders().size(), hudX, hudY);
-        hudY += 16;
+        if (lines.isEmpty()) return;
 
+        // === Hitung ukuran kotak background ===
+        FontMetrics fm = g.getFontMetrics();
+        int lineHeight = fm.getHeight();
+        int paddingY   = 8;
+        int paddingX   = 10;
+
+        int maxWidth = 0;
+        for (String s : lines) {
+            maxWidth = Math.max(maxWidth, fm.stringWidth(s));
+        }
+
+        int cardHeight = paddingY * 2 + lines.size() * lineHeight;
+
+        // === Background card ===
+        g.setColor(new Color(50, 50, 50));                        
+        g.fillRect(cardX, y, cardWidth, cardHeight);
+
+        g.setColor(new Color(250, 240, 200));                    
+        g.fillRect(cardX + 2, y + 2, cardWidth - 4, cardHeight - 4);
+
+        // === Teks HUD ===
+        g.setColor(Color.BLACK);
+        int textX = cardX + paddingX;
+        int textY = y + paddingY + fm.getAscent();
+
+        for (String s : lines) {
+            g.drawString(s, textX, textY);
+            textY += lineHeight;
+        }
     }
 
     // Menggambar panel kecil di sisi kanan layar untuk daftar order aktif
@@ -357,13 +382,24 @@ class MapPanel extends JPanel {
         if (orders == null || orders.isEmpty()) return;
 
         int panelW = getWidth();
-        int cardWidth  = 230;
-        int cardX      = panelW - cardWidth - 15; // jarak 15px dari kanan
-        int y          = 20 + 4 * 16 + 12;
+        int cardWidth = 230;
+        int cardX = panelW - cardWidth - 15; // jarak 15px dari kanan
+
+        // ===== hitung tinggi kartu HUD (4 baris) =====
+        g.setFont(g.getFont().deriveFont(Font.BOLD, 14f));
+        FontMetrics fm = g.getFontMetrics();
+        int lineHeight = fm.getHeight();
+        int paddingY   = 8;
+        int hudLines   = 4;  // Stage, Time, Score, Active Orders
+
+        int hudCardHeight = paddingY * 2 + hudLines * lineHeight;
+
+        // ORDERS setelah HUD 
+        int y = 20 + hudCardHeight + 10;
 
         // === Header "ORDERS" ===
         g.setFont(g.getFont().deriveFont(Font.BOLD, 14f));
-        g.setColor(new Color(30, 30, 30));                 // strip hitam
+        g.setColor(new Color(30, 30, 30));                 
         g.fillRect(cardX, y, cardWidth, 24);
         g.setColor(Color.WHITE);
         g.drawString("ORDERS", cardX + 8, y + 16);
@@ -381,7 +417,6 @@ class MapPanel extends JPanel {
             int ingredientLines = (comps != null) ? comps.size() : 0;
 
             int baseHeight = 45; // tinggi minimum (nama + time)
-            int lineHeight = 14;
             int cardHeight = baseHeight + ingredientLines * lineHeight + 14;
 
             // === background card ===
@@ -403,7 +438,7 @@ class MapPanel extends JPanel {
             g.setFont(g.getFont().deriveFont(Font.PLAIN, 12f));
             textY += 16;
             int remain = o.getRemainingTime();
-            int limit  = o.getTimeLimitSec();
+            int limit  =o.getTimeLimitSec();
             int reward = o.getReward();
 
             g.drawString("Time: " + remain + "s   $" + reward, textX, textY);

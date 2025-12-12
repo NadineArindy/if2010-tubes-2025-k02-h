@@ -14,7 +14,14 @@ public class OrderManager {
     private int nextId = 1;
     private List<Recipe> availableRecipes;
     private int failedStreak = 0;
+    private int successCount = 0;  
+    private int failedCount  = 0;
     public static final int DEFAULT_ORDER_TIME = 60;
+
+    // ==== ORDER SPAWN CONTROL ====
+    // spawn order tiap 45 detik atau ketika chef sudah menyelesaikan order   
+    private long timeSinceLastSpawnMs = 0L;      
+    private static final int SPAWN_INTERVAL_MS = 45_000; 
 
     public List<Order> getActiveOrders() {
         return new ArrayList<>(activeOrders);
@@ -60,6 +67,10 @@ public class OrderManager {
 
         Order matched = findMatchingOrder(dish);
         removeOrder(matched);
+
+        registerCompletedOrder();
+        spawnRandomOrder();
+
         return matched.getReward();
     }
 
@@ -125,16 +136,55 @@ public class OrderManager {
         return null;
     }
 
+    public int getSuccessCount() {
+        return successCount;
+    }
+
+    public int getFailedCount() {
+        return failedCount;
+    }
+
     public int getFailedStreak() {
         return failedStreak;
     }
 
     public void registerFailedOrder() {
         failedStreak++;
+        failedCount++;
     }
 
     public void registerCompletedOrder() {
         failedStreak = 0; // reset jika ada order yang sukses
+        successCount++;
     }
+
+    // panggil setiap kali mulai stage baru
+    public void resetStageStats() {
+        failedStreak = 0;
+        successCount = 0;
+        failedCount  = 0;
+    }
+
+    public void clearAllOrders() {
+        activeOrders.clear();
+    }
+
+    // Setiap 45 detik, spawn 1 order baru jika belum mencapai maxConcurrentOrders
+    public void update(int deltaTimeMs, int maxConcurrentOrders) {
+        if (deltaTimeMs <= 0) return;
+        if (availableRecipes == null || availableRecipes.isEmpty()) return;
+
+        timeSinceLastSpawnMs += deltaTimeMs;
+
+        if (timeSinceLastSpawnMs >= SPAWN_INTERVAL_MS) {
+            timeSinceLastSpawnMs = 0L;
+
+            // Jika sudah penuh, tidak spawn
+            if (activeOrders.size() < maxConcurrentOrders) {
+                spawnRandomOrder();
+            }
+        }
+    }
+
 
 }
