@@ -87,7 +87,7 @@ public class GameLoop {
         if (deltaTime <= 0) return;
         if (stageOver) return; 
 
-        // ===UPDATE TIMER STAGE ===
+        // === UPDATE TIMER STAGE ===
         if (stageConfig != null && remainingTimeMs > 0) {
             remainingTimeMs -= deltaTime;
             if (remainingTimeMs < 0) remainingTimeMs = 0;
@@ -133,6 +133,17 @@ public class GameLoop {
                     failedByTooManyOrders = true;
                     return;
                 }
+            }
+        }
+
+
+        // === CEK TARGET SCORE (PASS) ===
+        if (stageConfig != null && scoreManager != null) {
+            int currentScore = scoreManager.getScore();
+            if (currentScore >= stageConfig.targetScore) {
+                stagePass = true;
+                stageOver = true;
+                return;  
             }
         }
 

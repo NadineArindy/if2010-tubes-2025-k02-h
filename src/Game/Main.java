@@ -235,7 +235,7 @@ public class Main {
         // reset stage
         orderManager.resetStageStats();
         orderManager.clearAllOrders();
-
+        scoreManager.resetScore();
 
         // === SETUP MAP & CHEF ===
         map = MapFactory.createSampleMap();
