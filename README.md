@@ -1,6 +1,8 @@
 # 🍣 NimonsCooked / ShusiCooked  
 _Final Project – Object-Oriented Programming STI’24 K02-H_
-![Screenshot 1](./resources/screenshots/ReadMe.png)
+<p align="center">
+  <img src="./resources/assets/ReadMe.png" width="650">
+</p>
 ---
 
 ## 🎮 Game Description
