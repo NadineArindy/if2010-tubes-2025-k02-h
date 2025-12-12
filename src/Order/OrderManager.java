@@ -14,7 +14,7 @@ public class OrderManager {
     private int nextId = 1;
     private List<Recipe> availableRecipes;
     private int failedStreak = 0;
-    public static final int DEFAULT_ORDER_TIME = 100;
+    public static final int DEFAULT_ORDER_TIME = 60;
 
     public List<Order> getActiveOrders() {
         return new ArrayList<>(activeOrders);
@@ -102,7 +102,7 @@ public class OrderManager {
         Recipe randomRecipe = availableRecipes.get(rand.nextInt(availableRecipes.size()));
         
         // Nilai reward/time limit bisa hardcode atau ambil dari properti Recipe jika ada
-        int reward = 100; // Contoh
+        int reward = 120;
         int penalty = 50; 
         int timeLimit = DEFAULT_ORDER_TIME;
 

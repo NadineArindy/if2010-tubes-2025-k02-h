@@ -403,7 +403,7 @@ class MapPanel extends JPanel {
             g.setFont(g.getFont().deriveFont(Font.PLAIN, 12f));
             textY += 16;
             int remain = o.getRemainingTime();
-            int limit  = 100;
+            int limit  = o.getTimeLimitSec();
             int reward = o.getReward();
 
             g.drawString("Time: " + remain + "s   $" + reward, textX, textY);

@@ -53,6 +53,10 @@ public class Order {
         return Math.max(0, timeLimitSec - (int) elapsed); 
     }
 
+    public int getTimeLimitSec(){
+        return timeLimitSec;
+    }
+
     @Override
     public String toString() {
         return "Order#" + id + " (" + recipe.getName() + ")";
