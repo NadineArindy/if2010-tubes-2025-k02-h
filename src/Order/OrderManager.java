@@ -19,7 +19,7 @@ public class OrderManager {
     public static final int DEFAULT_ORDER_TIME = 60;
 
     // ==== ORDER SPAWN CONTROL ====
-    // spawn order tiap 45 detik atau ketika chef sudah menyelesaikan order   
+    // spawn order tiap 45 detik   
     private long timeSinceLastSpawnMs = 0L;      
     private static final int SPAWN_INTERVAL_MS = 45_000; 
 
@@ -69,7 +69,6 @@ public class OrderManager {
         removeOrder(matched);
 
         registerCompletedOrder();
-        spawnRandomOrder();
 
         return matched.getReward();
     }
@@ -85,7 +84,7 @@ public class OrderManager {
             if (o.isExpired()) {
                 activeOrders.remove(o);
                 totalPenalty += o.getPenalty(); // Jumlahkan penaltinya
-                spawnRandomOrder(); // Spawn order baru sebagai pengganti
+                registerFailedOrder();
             }
         }
         return totalPenalty;
@@ -163,10 +162,15 @@ public class OrderManager {
         failedStreak = 0;
         successCount = 0;
         failedCount  = 0;
+        resetSpawnTimer();
     }
 
     public void clearAllOrders() {
         activeOrders.clear();
+    }
+
+    public void resetSpawnTimer() {
+        timeSinceLastSpawnMs = 0L;
     }
 
     // Setiap 45 detik, spawn 1 order baru jika belum mencapai maxConcurrentOrders
@@ -177,7 +181,7 @@ public class OrderManager {
         timeSinceLastSpawnMs += deltaTimeMs;
 
         if (timeSinceLastSpawnMs >= SPAWN_INTERVAL_MS) {
-            timeSinceLastSpawnMs = 0L;
+            resetSpawnTimer();
 
             // Jika sudah penuh, tidak spawn
             if (activeOrders.size() < maxConcurrentOrders) {

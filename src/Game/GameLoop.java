@@ -124,6 +124,13 @@ public class GameLoop {
                 scoreManager.subtractScore(totalPenalty);
             }
 
+            // === jika active order == 0, spawn 1 order ===
+            if (stageConfig != null && remainingTimeMs > 0 && orderManager.getActiveOrders().isEmpty()) {
+
+                orderManager.spawnRandomOrder();    
+                orderManager.resetSpawnTimer();      // reset spawn timer
+            }
+
             // === CEK FAILED-STREAK ===
             if (stageConfig != null){
                 int streak = orderManager.getFailedStreak();
