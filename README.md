@@ -1,1 +1,63 @@
-# if2010-tubes-2025-k02-h
+# 🍣 NimonsCooked / ShusiCooked  
+_Final Project – Object-Oriented Programming STI’24 K02-H_
+![Screenshot 1](./resources/screenshots/ReadMe.png)
+---
+
+## 🎮 Game Description
+**NimonsCooked** is a pixel-art, time-management cooking game inspired by *Overcooked*.  
+Players control **two chefs** who must collaborate to prepare sushi dishes, manage kitchen stations, and complete customer orders under time pressure.
+
+This project demonstrates the application of **Object-Oriented Programming (OOP)** principles, such as abstraction, inheritance, polymorphism, and encapsulation.
+
+---
+
+## 🧩 Main Features
+- Two difficulty levels: **Easy** and **Hard**
+- Dual-chef system with instant character switching
+- Interactive kitchen stations (ingredients, cutting board, stove, serving area, etc.)
+- Sushi recipe and processing system
+- Time-based scoring and stage evaluation
+
+---
+
+## 🕹️ Controls
+
+### Main Menu
+| Key | Action |
+|-----|--------|
+| **X** | Start → Stage Select |
+| **H** | Help |
+| **Q** | Exit Game |
+
+### Help Menu
+| Key | Action |
+|-----|--------|
+| **ESC** | Back to Main Menu |
+
+### Stage Select
+| Key | Action |
+|-----|--------|
+| **1** | Start Easy Stage |
+| **2** | Start Hard Stage |
+| **ESC** | Back to Main Menu |
+
+### In Game
+| Key | Action |
+|-----|--------|
+| **W / A / S / D** | Move Chef |
+| **E** | Interact (pick up, cut, cook, deliver) |
+| **B** | Switch Chef |
+
+### Post Stage
+| Key | Action |
+|-----|--------|
+| **R** | Retry Stage |
+| **N** | Back to Stage Select |
+
+---
+
+## 🎥 Gameplay GIF  
+(Add your GIF in `/resources/assets/` and update this link.)
+
+```md
+![Gameplay GIF](./resources/assets/gameplay.gif)
