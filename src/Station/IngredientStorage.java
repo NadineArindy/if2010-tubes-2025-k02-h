@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import src.Game.GameContext;
 import src.Game.StationType;
+import src.Ingredients.Ingredient;
 import src.Item.Item;
 import src.Item.KitchenUtensils;
 import src.Item.Plate;
@@ -62,17 +63,49 @@ public class IngredientStorage extends Station {
 
 
         //CASE 1: Chef memiliki piring bersih di tangan dan ada item di workstation tapi tidak berada di dalam utensil
-        if(inHand instanceof Plate && ((Plate) inHand).isClean() && onTop instanceof Preparable && !(onTop instanceof KitchenUtensils)){
+        if(inHand instanceof Plate && ((Plate) inHand).isClean() && !(onTop instanceof KitchenUtensils)){
             Plate plateInHand = (Plate) inHand;
-            Preparable preparable = (Preparable) onTop;
+            Preparable source = null;
+            boolean fromTop = false;
+
+            if (onTop instanceof Preparable) {
+                source = (Preparable) onTop;
+                fromTop = true;
+            } else if (onTop == null && infiniteSupply) {
+                source = dispenseIngredient();
+            }
+
+            if (source == null) {
+                GameContext.getMessenger().error(
+                    "Tidak ada ingredient di IngredientStorage " + getId() + " untuk di-plating."
+                );
+                return;
+            }
+
+            // Pindahkan ingredient yang edible ke piring bersih
+            if (!isEdible(source)) {
+                if (source instanceof Ingredient ing) {
+                    GameContext.getMessenger().error(
+                        ing.getName() + " belum siap untuk plating (state: " + ing.getState() + ")."
+                    );
+                } else {
+                    GameContext.getMessenger().error("Ingredient belum siap untuk plating.");
+                }
+                return;
+            }
+
             try{
-                plateInHand.addIngredient(preparable);
-                itemOnTop = null;
+                plateInHand.addIngredient(source);
+
+                if (fromTop && !infiniteSupply) {
+                    itemOnTop = null;
+                }
+
                 itemOnTop = plateInHand;
                 chef.setInventory(null);
             
                 GameContext.getMessenger().info(
-                    "Plating: " + preparable.getClass().getSimpleName() +
+                    "Plating: " + source.getClass().getSimpleName() +
                     " diambil dari rak dan diletakkan di atas plate."
                 );
 
@@ -156,10 +189,19 @@ public class IngredientStorage extends Station {
                     inHand.getClass().getSimpleName() +
                     " diletakkan di atas IngredientStorage."
             );
-            
+
             return;
         }
 
         System.out.println("[IngredientStorage " + getId() + "] interact by " + chef.getName());
     }
+
+    // Hanya ingredient sudah ready yang boleh di-plating
+    private boolean isEdible(Preparable p) {
+        if (p instanceof src.Ingredients.Ingredient ing) {
+            return ing.isReady();  
+        }
+        return false;
+    }
+
 }

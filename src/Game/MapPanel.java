@@ -214,63 +214,77 @@ class MapPanel extends JPanel {
                             g2.fillRect(barX + 1, barY + 1, filled - 2, barHeight - 2);
                         }
                     }
-                }
-            }
-        }
-
-        // ===== Gambar chef + item yang sedang dipegang =====
-        if (chefs != null) {
-            for (int i = 0; i < chefs.length; i++) {
-                Chef c = chefs[i];
-                if (c == null) continue;
-
-                Position pos = c.getPosition();
-                if (pos == null) continue;
-
-                int cx = xOffset + pos.getX() * cellSize;
-                int cy = yOffset + pos.getY() * cellSize;
-
-                // pilih sprite berdasarkan index (C1 = A, C2 = B)
-                BufferedImage sprite = (i == 0)
-                        ? AssetManager.chef_A
-                        : AssetManager.chef_B;
-
-                // Gambar sprite chef
-                if (sprite != null) {
-                    g.drawImage(
-                            sprite,
-                            cx, cy,
-                            cellSize, cellSize,
-                            null
-                    );
                 } else {
-                    // fallback 
-                    g.setColor(c == activeChef ? java.awt.Color.BLUE : java.awt.Color.GREEN);
-                    g.fillOval(
-                            cx + cellSize / 4,
-                            cy + cellSize / 4,
-                            cellSize / 2,
-                            cellSize / 2
-                    );
-                }
-
-                // Gambar icon item yang sedang dipegang di atas kepala chef
-                Item held = c.getInventory();
-                BufferedImage itemIcon = AssetManager.getItemIcon(held); 
-
-                if (itemIcon != null) {
-                    int iconSize = cellSize / 2; // item lebih kecil dari chef
-                    int ix = cx + (cellSize - iconSize) / 2;
-                    int iy = cy - iconSize / 2; // item di atas kepala chef
-
-                    g.drawImage(itemIcon, ix, iy, iconSize, iconSize, null);
+                    // tile tanpa station, cek item di lantai
+                    if (tile.hasGroundItem()) {
+                        Item ground = tile.getGroundItem();
+                        BufferedImage itemIcon = AssetManager.getItemIcon(ground);
+                        if (itemIcon != null) {
+                            int margin = cellSize / 4;
+                            g.drawImage(
+                                itemIcon,
+                                px + margin, py + margin,
+                                cellSize - 2 * margin, cellSize - 2 * margin,
+                                null
+                            );
+                        }
+                    }
                 }
             }
-        }
+            // ===== Gambar chef + item yang sedang dipegang =====
+            if (chefs != null) {
+                for (int i = 0; i < chefs.length; i++) {
+                    Chef c = chefs[i];
+                    if (c == null) continue;
 
-        // HUD text di pojok kiri + panel order di kanan
-        drawHUD(g);
-        drawOrdersPanel(g);
+                    Position pos = c.getPosition();
+                    if (pos == null) continue;
+
+                    int cx = xOffset + pos.getX() * cellSize;
+                    int cy = yOffset + pos.getY() * cellSize;
+
+                    // pilih sprite berdasarkan index (C1 = A, C2 = B)
+                    BufferedImage sprite = (i == 0)
+                            ? AssetManager.chef_A
+                            : AssetManager.chef_B;
+
+                    // Gambar sprite chef
+                    if (sprite != null) {
+                        g.drawImage(
+                                sprite,
+                                cx, cy,
+                                cellSize, cellSize,
+                                null
+                        );
+                    } else {
+                        // fallback 
+                        g.setColor(c == activeChef ? java.awt.Color.BLUE : java.awt.Color.GREEN);
+                        g.fillOval(
+                                cx + cellSize / 4,
+                                cy + cellSize / 4,
+                                cellSize / 2,
+                                cellSize / 2
+                        );
+                    }
+
+                    // Gambar icon item yang sedang dipegang di atas kepala chef
+                    Item held = c.getInventory();
+                    BufferedImage itemIcon = AssetManager.getItemIcon(held); 
+
+                    if (itemIcon != null) {
+                        int iconSize = cellSize / 2; // item lebih kecil dari chef
+                        int ix = cx + (cellSize - iconSize) / 2;
+                        int iy = cy - iconSize / 2; // item di atas kepala chef
+
+                        g.drawImage(itemIcon, ix, iy, iconSize, iconSize, null);
+                    }
+                }
+            }
+
+            // HUD text di pojok kiri + panel order di kanan
+            drawHUD(g);
+            drawOrdersPanel(g);
+        }
     }
 
     // Menggambar HUD sederhana di pojok kanan atas

@@ -6,6 +6,10 @@ import src.Game.GameMap;
 import src.Game.Tile;
 import src.Item.Item;
 import src.Station.Station;
+import src.Item.Plate;
+import src.Item.Preparable;
+import src.Item.KitchenUtensils;
+import src.Ingredients.Ingredient;
 
 public class Chef {
     private final String id;
@@ -120,6 +124,52 @@ public class Chef {
 
     private void handleFloorInteraction(Tile tile) {
         // implementasi pick up / put down item di lantai
+        if (tile == null) return;
+
+        Item inHand   = this.getInventory();
+        Item onGround = tile.getGroundItem();
+
+        //CASE 1: Chef pegang plate bersih, di depan ada ingredient edible di luar kitchen utensils
+        if (inHand instanceof Plate plate
+                && plate.isClean()
+                && onGround instanceof Preparable prep
+                && !(onGround instanceof KitchenUtensils)
+                && isEdible(prep)) {
+
+            try {
+                plate.addIngredient(prep);
+
+                tile.setGroundItem(plate);
+                this.setInventory(null);
+
+                GameContext.getMessenger().info(
+                    "Plating: " + HudUtil.formatHeldItem(plate) +
+                    " di lokasi ingredient."
+                );
+            } catch (RuntimeException e) {
+                GameContext.getMessenger().error("Gagal plating di lantai: " + e.getMessage());
+            }
+            return; 
+        }
+
+        //CASE 2: Chef tangan kosong, ada item di lantai 
+        if (inHand == null && onGround != null) {
+            this.setInventory(onGround);
+            tile.setGroundItem(null);
+            return;
+        }
+
+        //CASE 3: Chef tangan isi, lantai kosong
+        if (inHand != null && onGround == null) {
+            tile.setGroundItem(inHand);
+            this.setInventory(null);
+            return;
+        }
+
+        //CASE 4: Chef tangan isi tapi lantai juga ada item
+        GameContext.getMessenger().error(
+            name + " tidak bisa meletakkan item di sini (tile sudah terisi)."
+        );    
     }
 
     private Position getFrontPosition() {
@@ -158,7 +208,6 @@ public class Chef {
     }
 
     public void startAsyncAction(Runnable body) {
-        // Jangan double start
         if (hasRunningAction()) return;
 
         startBusy();
@@ -184,4 +233,13 @@ public class Chef {
     public boolean isActionCancelled() {
         return actionCancelled;
     }
+
+    // Hanya ingredient sudah ready yang boleh di-plating
+    private boolean isEdible(Preparable p) {
+        if (p instanceof Ingredient ing) {
+            return ing.isReady(); 
+        }
+        return false;
+    }
+
 }

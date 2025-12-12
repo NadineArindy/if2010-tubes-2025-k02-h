@@ -134,19 +134,44 @@ public class CuttingStation extends Workstation {
         Item onTop = peekTopItem(); 
 
         //CASE 1: Chef memiliki piring bersih di tangan dan ada item di workstation tapi tidak berada di dalam utensil
-        if(inHand instanceof Plate && ((Plate) inHand).isClean() && onTop instanceof Preparable && !(onTop instanceof KitchenUtensils)){
+        if(inHand instanceof Plate && ((Plate) inHand).isClean()){
             Plate plateInHand = (Plate) inHand;
-            Preparable preparable = (Preparable) onTop;
-            try{
-                plateInHand.addIngredient(preparable);
-                removeTopItem();
-                addItem(plateInHand);
-                chef.setInventory(null);
 
-                GameContext.getMessenger().info(
-                    "Plating: " + preparable.getClass().getSimpleName() +
-                    " dipindah ke plate di CuttingStation."
-                );
+            Preparable source      = null;
+            boolean fromCurrent    = false;
+
+            // 1) coba pakai item di atas meja dulu
+            if (onTop instanceof Preparable && !(onTop instanceof KitchenUtensils)) {
+                source = (Preparable) onTop;
+            }
+            // 2) kalau tidak ada di atas meja, tapi ada currentIngredient yang sudah selesai
+            else if (currentIngredient != null && !isCutting && remainingTime <= 0) {
+                source      = currentIngredient;
+                fromCurrent = true;
+            }
+
+            try {
+                // masukkan ingredient ke plate
+                plateInHand.addIngredient(source);
+
+                // hapus ingredient dari sumbernya
+                if (fromCurrent) {
+                    currentIngredient = null;
+                    remainingTime     = 0;
+                } else {
+                    removeTopItem();
+                }
+
+                // sesuai spek: dish (plate berisi) diletakkan di CuttingStation
+                if (!isFull()) {
+                    addItem(plateInHand);
+                    chef.setInventory(null);
+                } else {
+                    // kalau penuh, rollback sederhana: keluarkan lagi ingredient
+                    GameContext.getMessenger().error(
+                        "CuttingStation penuh, tidak bisa meletakkan plate."
+                    );
+                }
             } catch (RuntimeException e){
                 GameContext.getMessenger().error(
                     "Gagal plating di CuttingStation: " + e.getMessage()
@@ -162,12 +187,13 @@ public class CuttingStation extends Workstation {
             try{
                 for(Preparable p : utensilOnTable.getContents()){
                     plateInHand2.addIngredient(p);
+                }
 
                 GameContext.getMessenger().info(
                     "Plating: ingredients dari " + utensilOnTable.getName() +
                     " dipindah ke plate di tangan chef."
                 );
-                }
+                
                 utensilOnTable.getContents().clear();
             } catch (RuntimeException e){
                 GameContext.getMessenger().error(
