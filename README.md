@@ -55,8 +55,19 @@ This project demonstrates the application of **Object-Oriented Programming (OOP)
 | **N** | Back to Stage Select |
 
 
-## 🎥 Gameplay GIF  
-(Add your GIF in `/resources/assets/` and update this link.)
 
 ```md
+## ▶️ How to Run the Game
+
 ![Gameplay GIF](./resources/assets/gameplay.gif)
+
+
+---
+
+
+## ▶️ How to Run the Game
+To run NimonsCooked, simply navigate to the main entry file located at `src/Game/Main.java`. You can run the game directly from your IDE (VS Code, IntelliJ, Eclipse) by opening this file and selecting Run, or you can run it from the terminal by compiling all Java files and then executing the main class. If using the terminal, run the following commands:
+$files = Get-ChildItem -Recurse -Filter *.java | Select-Object -ExpandProperty FullName
+javac -d out $files
+java -cp out src.Game.MainGame
+As long as you run `Main.java`, the game will start normally.
