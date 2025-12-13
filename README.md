@@ -199,7 +199,7 @@ Pastikan sedang berada di folder root project (yang berisi folder `src` dan `res
 2. Kompilasi semua file `.java` ke folder `out`:
 
 
-```md
+```bash
 $files = Get-ChildItem -Recurse -Filter *.java | Select-Object -ExpandProperty FullName
 javac -d out $files
 java -cp out src.Game.Main
