@@ -1,4 +1,4 @@
-# 🍣 NimonsCooked / ShusiCooked  
+# 🍣 NimonsCooked 
 _Final Project – Object-Oriented Programming STI’24 K02-H_
 
 ![Screenshot 1](./resources/screenshots/ReadMe.png)
