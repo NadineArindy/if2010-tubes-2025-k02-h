@@ -1,7 +1,8 @@
 # 🍣 NimonsCooked / ShusiCooked  
 _Final Project – Object-Oriented Programming STI’24 K02-H_
 
-<img src="./resources/screenshots/ReadMe.png" width="450">
+![Screenshot 1](./resources/screenshots/ReadMe.png)
+
 
 ---
 
@@ -11,8 +12,6 @@ Players control **two chefs** who must collaborate to prepare sushi dishes, mana
 
 This project demonstrates the application of **Object-Oriented Programming (OOP)** principles, such as abstraction, inheritance, polymorphism, and encapsulation.
 
----
-
 ## 🧩 Main Features
 - Two difficulty levels: **Easy** and **Hard**
 - Dual-chef system with instant character switching
@@ -20,7 +19,6 @@ This project demonstrates the application of **Object-Oriented Programming (OOP)
 - Sushi recipe and processing system
 - Time-based scoring and stage evaluation
 
----
 
 ## 🕹️ Controls
 
@@ -56,7 +54,6 @@ This project demonstrates the application of **Object-Oriented Programming (OOP)
 | **R** | Retry Stage |
 | **N** | Back to Stage Select |
 
----
 
 ## 🎥 Gameplay GIF  
 (Add your GIF in `/resources/assets/` and update this link.)
