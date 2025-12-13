@@ -198,10 +198,11 @@ Pastikan sedang berada di folder root project (yang berisi folder `src` dan `res
 1. Buka terminal di folder project (ctrl + shift + ~).
 2. Kompilasi semua file `.java` ke folder `out`:
 
+
+```md
 $files = Get-ChildItem -Recurse -Filter *.java | Select-Object -ExpandProperty FullName
 javac -d out $files
 java -cp out src.Game.Main
 
-As long as you run Main.java, the game will start normally.
 
 
