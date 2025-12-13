@@ -57,7 +57,8 @@ This project demonstrates the application of **Object-Oriented Programming (OOP)
 
 
 ```md
-Game ini dikembangkan menggunakan *Java 16+, menerapkan prinsip **Object-Oriented Programming (OOP), **multithreading, serta berbagai **design pattern* dan *SOLID principles*.
+Game ini dikembangkan menggunakan *Java 16+, menerapkan prinsip **Object-Oriented Programming (OOP), 
+**multithreading, serta berbagai **design pattern* dan *SOLID principles*.
 
 
 ## Tujuan Permainan
@@ -188,17 +189,16 @@ Pastikan sedang berada di folder root project (yang berisi folder `src` dan `res
 
 1. Buka project ini di **IntelliJ / VS Code / Eclipse**.
 2. Cari file `src/Game/Main.java`
-3. Klik kanan → **Run `Main.main()`** (atau tombol ▶ di editor).
+3. Klik **Run `Main.main()`**
 4. Game akan langsung berjalan.
 
 ---
 
 ### Compile and Run the Game via Terminal (Windows – PowerShell)
 
-1. Buka PowerShell di folder project (yang ada `src`-nya).
+1. Buka terminal di folder project (ctrl + shift + ~).
 2. Kompilasi semua file `.java` ke folder `out`:
 
-```powershell
 $files = Get-ChildItem -Recurse -Filter *.java | Select-Object -ExpandProperty FullName
 javac -d out $files
 java -cp out src.Game.Main
