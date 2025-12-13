@@ -85,6 +85,11 @@ Chef dapat melempar ingredient mentah.
 - Abstract Class & Interface
 - Encapsulation
 - Composition
+- Generics
+- Exceptions
+- Collections
+- Concurrency
+
 
 ### Design Patterns
 - State Pattern → `GameState`
