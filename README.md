@@ -59,7 +59,7 @@ This project demonstrates the application of **Object-Oriented Programming (OOP)
 ```md
 ## ▶️ How to Run the Game
 
-![Gameplay GIF](./resources/assets/gameplay.gif)
+![Gameplay GIF](./resources/screenshots/gameplay.gif)
 
 
 ---
