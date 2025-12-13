@@ -54,9 +54,8 @@ This project demonstrates the application of **Object-Oriented Programming (OOP)
 | **R** | Retry Stage |
 | **N** | Back to Stage Select |
 
+--- 
 
-
-```md
 Game ini dikembangkan menggunakan *Java 16+, menerapkan prinsip **Object-Oriented Programming (OOP), 
 **multithreading, serta berbagai **design pattern* dan *SOLID principles*.
 
