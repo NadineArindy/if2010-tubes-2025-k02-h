@@ -143,27 +143,10 @@ Chef dapat melempar ingredient mentah.
 - Collections
 - Concurrency
 
-
-### Design Patterns
-- State Pattern → GameState
-- Observer-like Pattern → update Order & Score
-- Command-style Input Handling
-- Singleton-like Context → GameContext
-
 ### SOLID Principles
 - Single Responsibility Principle
 - Open/Closed Principle
 - Dependency Inversion (melalui GameContext)
-
-### Concurrency
-- Thread untuk:
-  - Cutting
-  - Cooking
-  - Washing
-  - KitchenLoop
-- Menggunakan kontrol state dan flag volatile
-
----
 
 ## Struktur Folder
 | Folder / File | Deskripsi | Link |
